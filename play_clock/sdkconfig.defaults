@@ -1,0 +1,21 @@
+# ESP32 Play Clock - Default Configuration
+# Override flash size to 2MB for actual hardware
+
+CONFIG_ESPTOOLPY_FLASHSIZE_2MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="2MB"
+
+# Partition table
+CONFIG_PARTITION_TABLE_SINGLE_APP=y
+CONFIG_PARTITION_TABLE_FILENAME="partitions_singleapp.csv"
+
+# Disable Bluetooth for radio module
+CONFIG_BT_ENABLED=n
+CONFIG_BT_BLUEDROID_ENABLED=n
+CONFIG_BLE_ENABLED=n
+
+# Enable WiFi for mesh networking (if needed)
+CONFIG_WIFI_ENABLED=y
+
+# Optimizations for scoreboard module
+CONFIG_FREERTOS_HZ=1000
+CONFIG_ESP32_DEFAULT_CPU_FREQ_240=y
