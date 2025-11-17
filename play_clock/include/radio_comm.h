@@ -5,6 +5,15 @@
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
 
+// System state structure (available to both C and C++)
+struct SystemState {
+    uint8_t display_state;  // 0=STOP, 1=RUN, 2=RESET
+    uint16_t seconds;
+    uint8_t sequence;
+    uint32_t last_status_time;
+    bool link_alive;
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -42,16 +51,12 @@ struct __attribute__((packed)) StatusFrame {
     uint8_t crc8;          // CRC checksum
 };
 
-// System state structure
-struct SystemState {
-    uint8_t display_state;  // 0=STOP, 1=RUN, 2=RESET
-    uint16_t seconds;
-    uint8_t sequence;
-    uint32_t last_status_time;
-    bool link_alive;
-};
+#ifdef __cplusplus
+}
+#endif
 
-// Radio communication class
+// Radio communication class (C++ only)
+#ifdef __cplusplus
 class RadioComm {
 private:
     bool initialized;
@@ -92,7 +97,4 @@ public:
     bool isDataAvailable();
     void flushRX();
 };
-
-#ifdef __cplusplus
-}
 #endif

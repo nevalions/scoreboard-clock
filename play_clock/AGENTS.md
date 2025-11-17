@@ -1,7 +1,8 @@
 # AGENTS.md - ESP32 Play Clock Development Guide
 
-## Build Commands
+## Development Workflow
 
+### Build Commands
 ```bash
 # Build project
 idf.py build
@@ -22,8 +23,7 @@ idf.py fullclean
 idf.py menuconfig
 ```
 
-## Test Commands
-
+### Testing
 ```bash
 # Build all tests
 idf.py build
@@ -32,20 +32,14 @@ idf.py build
 # Edit test/test_*.cpp files to run individual tests
 # Flash test firmware:
 idf.py flash monitor
-
-# Using PlatformIO (alternative)
-pio run                    # Build
-pio run --target upload    # Flash
-pio device monitor         # Monitor
 ```
 
 ## Code Style Guidelines
 
-### Includes & Headers
-- Use `#pragma once` for header guards
-- C++ headers: `<cstdint>`, `<stdbool.h>` for C compatibility
-- ESP-IDF headers: `#include "esp_log.h"`, `#include "freertos/FreeRTOS.h"`
-- Project headers: `#include "display_driver.h"`, `#include "radio_comm.h"`
+### Formatting
+- 4-space indentation, no tabs
+- Braces on same line for functions/methods
+- Maximum line length: 120 characters
 
 ### Naming Conventions
 - Constants: `UPPER_SNAKE_CASE` (e.g., `LED_STRIP_PIN`, `STATUS_TIMEOUT_MS`)
@@ -54,20 +48,21 @@ pio device monitor         # Monitor
 - Functions: `lower_snake_case()` (e.g., `display.begin()`, `radio_init()`)
 - Tags: `UPPER_SNAKE_CASE` (e.g., `TAG = "PLAY_CLOCK"`)
 
-### Types & Formatting
+### Types & Headers
 - Use standard C/C++ types: `uint8_t`, `uint16_t`, `bool`, `uint32_t`
-- 4-space indentation, no tabs
-- Braces on same line for functions/methods
-- Maximum line length: 120 characters
+- Header guards: `#pragma once`
+- C++ headers: `<cstdint>`, `<stdbool.h>` for C compatibility
+- ESP-IDF headers: `#include "esp_log.h"`, `#include "freertos/FreeRTOS.h"`
+- Project headers: `#include "display_driver.h"`, `#include "radio_comm.h"`
 
 ### Error Handling
-- Use ESP-IDF logging: `ESP_LOGI(TAG, "message")`, `ESP_LOGE(TAG, "error")`
+- ESP-IDF logging: `ESP_LOGI(TAG, "message")`, `ESP_LOGE(TAG, "error")`
 - Return `bool` for success/failure in initialization functions
-- Use assertions in tests: `TEST_ASSERT_TRUE(condition)`, `TEST_ASSERT_EQUAL(expected, actual)`
+- Test assertions: `TEST_ASSERT_TRUE(condition)`, `TEST_ASSERT_EQUAL(expected, actual)`
 - Handle hardware failures gracefully with infinite loops or error states
 
 ### ESP-IDF Specific
-- Use `extern "C" void app_main(void)` for entry point
-- FreeRTOS tasks: `vTaskDelay(pdMS_TO_TICKS(ms))`
-- GPIO: `gpio_set_direction(pin, GPIO_MODE_OUTPUT)`, `gpio_set_level(pin, level)`
+- Entry point: `extern "C" void app_main(void)`
+- FreeRTOS delays: `vTaskDelay(pdMS_TO_TICKS(ms))`
+- GPIO control: `gpio_set_direction(pin, GPIO_MODE_OUTPUT)`, `gpio_set_level(pin, level)`
 - Memory: Prefer stack allocation, use `malloc()` only when necessary

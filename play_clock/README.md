@@ -1,6 +1,14 @@
 # Play Clock Module
 
-This module implements the Play Clock display for the scoreboard system. It displays seconds (SS) on a 2-digit 7-segment LED display and receives timing data wirelessly from the controller.
+ESP32-based wireless play clock display for scoreboard systems. Shows seconds (SS) on large 7-segment LED displays and receives timing data wirelessly from a central controller.
+
+## Overview
+
+The Play Clock module is a receive-only display unit that:
+- Displays seconds (00-99) on large LED digits
+- Receives timing data wirelessly from the controller
+- Shows system status through LED colors
+- Operates autonomously without user interaction
 
 ## Hardware
 
@@ -11,82 +19,57 @@ This module implements the Play Clock display for the scoreboard system. It disp
 - **Power**: 12V DC with power injection at both ends
 
 ### Pin Configuration
-- **LED Data Pin**: GPIO13 (RMT channel 0)
-- **Radio CE**: GPIO4
-- **Radio CSN**: GPIO5
-- **Status LED**: GPIO2
-- **SPI (for nRF24L01+)**:
-  - MOSI: GPIO23
-  - MISO: GPIO19
-  - SCK: GPIO18
+| Function | Pin | Description |
+|----------|-----|-------------|
+| LED Data | GPIO13 | RMT channel 0 for WS2815 control |
+| Radio CE | GPIO4 | Radio chip enable |
+| Radio CSN | GPIO5 | Radio chip select |
+| Status LED | GPIO2 | System status indicator |
+| SPI MOSI | GPIO23 | SPI data out (nRF24L01+) |
+| SPI MISO | GPIO19 | SPI data in (nRF24L01+) |
+| SPI SCK | GPIO18 | SPI clock (nRF24L01+) |
 
 ### Display Specifications
-- **Digits**: 2 (for seconds display - SS format)
+- **Digits**: 2 (seconds display - SS format)
 - **Segment Height**: ~50cm (~30 LEDs per vertical segment)
 - **Horizontal Segments**: 25cm (~15 LEDs)
 - **LED Type**: WS2815 12V (dual data lines for reliability)
 - **LED Density**: 60 LEDs/m
 - **Total LEDs**: ~900 (estimated for complete display)
 
-## Functionality
+## Operation
 
-### Operation Mode
-- **Receive-only**: Listens for status broadcasts from controller
-- **No local timing**: Displays only data received from controller
-- **Passive display**: No user interaction required
+### Display Features
+- **Time Display**: Shows seconds (00-99)
+- **Status Colors**: Different colors for RUN/STOP/RESET states
+- **Link Status**: Visual indication when controller connection is lost
+- **Error Display**: Shows error pattern on hardware failure
 
 ### Communication Protocol
 - **Frame Type**: 0xA1 (Status frame)
 - **Data Rate**: 250kbps
 - **Channel**: 100 (2.500 GHz)
 - **Update Rate**: Every 100-200ms from controller
-
-### Display Features
-- **Time Display**: Shows seconds (00-99)
-- **Status Indication**: Different colors for RUN/STOP/RESET states
-- **Link Status**: Visual indication when controller connection is lost
-- **Error Display**: Shows error pattern on hardware failure
-
-## Build and Flash
-
-### Using PlatformIO
-```bash
-# Build the project
-pio run
-
-# Upload to ESP32
-pio run --target upload
-
-# Monitor serial output
-pio device monitor
-```
-
-### Using ESP-IDF
-```bash
-# Build the project
-idf.py build
-
-# Flash to device
-idf.py flash
-
-# Monitor serial output
-idf.py monitor
-```
-
-## Network Configuration
-
-### Radio Settings
 - **Node ID**: 1 (Play Clock node)
 - **Controller ID**: 0 (Master node)
-- **Auto-ACK**: Enabled
-- **Retries**: 15 attempts, 1500µs delay
-- **CRC**: 16-bit validation
-- **Address Width**: 5 bytes
 
 ### Link Monitoring
 - **Timeout Detection**: 800ms without status triggers warning
 - **Visual Indicator**: Middle segment blinks on link loss
 - **Auto-Recovery**: Normal operation resumes when connection restored
+
+## Build and Flash
+
+See [AGENTS.md](AGENTS.md) for detailed development commands and workflow.
+
+### Quick Start
+```bash
+# Build and flash
+idf.py build flash monitor
+
+# Or build only
+idf.py build
+```
 
 ## Dependencies
 
@@ -97,7 +80,6 @@ idf.py monitor
 - `freertos` - Task management
 - `esp_log` - Logging system
 
-### No External Libraries
 All functionality is implemented using ESP-IDF built-in components for maximum reliability and performance.
 
 ## Troubleshooting
@@ -117,7 +99,7 @@ All functionality is implemented using ESP-IDF built-in components for maximum r
 - Verify ESP32 power and boot sequence
 - Check for hardware conflicts (pin assignments)
 
-## Development Notes
+## Technical Specifications
 
 ### Memory Usage
 - **LED Buffer**: ~2.7KB (900 LEDs × 3 bytes)

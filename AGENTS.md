@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a modular scoreboard timer system designed for sports timing, based on ESP32 microcontrollers and WS2815 LED strips. The system consists of multiple wireless modules that communicate via nRF24L01 and SX1278 radio modules.
+This is a modular scoreboard timer system designed for sports timing, based on ESP32 microcontrollers and WS2815 LED strips. The system consists of multiple wireless modules that communicate via radio modules. Currently implemented: Play Clock module with ESP32 framework.
 
 ## System Architecture
 
@@ -123,5 +123,6 @@ nonce: 2B
 - Command round-trip: typical 30-80ms with one hop
 - Each hop adds only a few ms at 250kbps
 - Supports 2-3 hops without significant latency
-- now its ESP32 project, we dont need code or improrts for Arduino
-- Led display modules does not have any logic only show data from controller (master)
+- ESP32 project using ESP-IDF framework (no Arduino code/imports)
+- LED display modules are receive-only, displaying data from controller (master)
+- Play Clock module is fully implemented with CMake build system

@@ -21,17 +21,18 @@ The system consists of multiple networked nodes that communicate wirelessly to p
 ```
 scoreboard_clock/
 ├── README.md                 # This file
-├── CLAUDE.md                 # Development guidance for Claude
+├── AGENTS.md                 # Development guidance for Claude
 ├── play_clock/              # ✅ Play Clock module
-│   ├── src/
+│   ├── main/
 │   │   ├── main.cpp         # Main application
 │   │   ├── display_driver.cpp
 │   │   └── radio_comm.cpp
+│   │   └── CMakeLists.txt
 │   ├── include/
 │   │   ├── display_driver.h
 │   │   └── radio_comm.h
-│   ├── platformio.ini
-│   ├── CMakeLists.txt
+│   ├── CMakeLists.txt        # Root CMake for module
+│   ├── sdkconfig.defaults    # ESP-IDF configuration
 │   └── README.md            # Module-specific docs
 ├── game_clock/              # 🚧 Game Clock module (planned)
 ├── controller/              # 🚧 Controller module (planned)
@@ -184,7 +185,7 @@ nonce: 2B
 
 ### Prerequisites
 - ESP32 development board
-- PlatformIO or ESP-IDF development environment
+- ESP-IDF development environment
 - WS2815 LED strips and appropriate power supplies
 - Radio modules (nRF24L01+ or SX1278)
 
@@ -194,21 +195,19 @@ nonce: 2B
 # Navigate to the play clock module
 cd play_clock/
 
-# Using PlatformIO
-pio run                    # Build the project
-pio run --target upload    # Flash to ESP32
-pio device monitor         # View serial output
-
 # Using ESP-IDF
 idf.py build              # Build the project
 idf.py flash              # Flash to device
 idf.py monitor            # View serial output
+
+# Configure project (optional)
+idf.py menuconfig         # Open configuration menu
 ```
 
 ### Development Workflow
-1. **Set up development environment** (PlatformIO recommended)
-2. **Configure hardware pins** in module-specific configuration
-3. **Build and flash** individual modules
+1. **Set up VS Code with ESP-IDF extension**
+2. **Configure hardware pins** in sdkconfig or menuconfig
+3. **Build and flash** individual modules using idf.py
 4. **Test radio communication** between modules
 5. **Deploy in network topology** with repeaters as needed
 
@@ -224,6 +223,6 @@ idf.py monitor            # View serial output
 
 ## 🔗 Technical Documentation
 
-- **Development Guidelines**: See [`CLAUDE.md`](./CLAUDE.md) for AI development assistance
+- **Development Guidelines**: See [`AGENTS.md`](./AGENTS.md) for AI development assistance
 - **Module Documentation**: Each module has its own README with detailed specifications
 - **Radio Protocol**: Detailed in the Radio Communication section above
