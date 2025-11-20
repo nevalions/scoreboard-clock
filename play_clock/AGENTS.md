@@ -1,5 +1,11 @@
 # AGENTS.md - ESP32 Play Clock Development Guide
 
+## Project Status
+- **Implementation**: Native C (converted from C++)
+- **Framework**: ESP-IDF v6.1-dev
+- **Target**: ESP32 microcontroller
+- **Status**: Complete and ready for deployment
+
 ## Development Workflow
 
 ### Build Commands
@@ -29,7 +35,7 @@ idf.py menuconfig
 idf.py build
 
 # Run specific test (edit test file app_main() to select test)
-# Edit test/test_*.cpp files to run individual tests
+# Edit test/test_*.c files to run individual tests
 # Flash test firmware:
 idf.py flash monitor
 ```
@@ -44,14 +50,14 @@ idf.py flash monitor
 ### Naming Conventions
 - Constants: `UPPER_SNAKE_CASE` (e.g., `LED_STRIP_PIN`, `STATUS_TIMEOUT_MS`)
 - Variables: `lower_snake_case` (e.g., `system_state`, `last_status_time`)
-- Classes: `PascalCase` (e.g., `PlayClockDisplay`)
-- Functions: `lower_snake_case()` (e.g., `display.begin()`, `radio_init()`)
+- Structs: `PascalCase` (e.g., `PlayClockDisplay`, `RadioComm`)
+- Functions: `lower_snake_case()` (e.g., `display_begin()`, `radio_begin()`)
 - Tags: `UPPER_SNAKE_CASE` (e.g., `TAG = "PLAY_CLOCK"`)
 
 ### Types & Headers
-- Use standard C/C++ types: `uint8_t`, `uint16_t`, `bool`, `uint32_t`
+- Use standard C types: `uint8_t`, `uint16_t`, `bool`, `uint32_t`
 - Header guards: `#pragma once`
-- C++ headers: `<cstdint>`, `<stdbool.h>` for C compatibility
+- C headers: `<stdint.h>`, `<stdbool.h>`
 - ESP-IDF headers: `#include "esp_log.h"`, `#include "freertos/FreeRTOS.h"`
 - Project headers: `#include "display_driver.h"`, `#include "radio_comm.h"`
 
@@ -62,7 +68,15 @@ idf.py flash monitor
 - Handle hardware failures gracefully with infinite loops or error states
 
 ### ESP-IDF Specific
-- Entry point: `extern "C" void app_main(void)`
+- Entry point: `void app_main(void)`
 - FreeRTOS delays: `vTaskDelay(pdMS_TO_TICKS(ms))`
 - GPIO control: `gpio_set_direction(pin, GPIO_MODE_OUTPUT)`, `gpio_set_level(pin, level)`
 - Memory: Prefer stack allocation, use `malloc()` only when necessary
+
+### C Programming Patterns (Current Implementation)
+- **Struct-based design** instead of classes (fully implemented)
+- **Function pointers in structs** for methods (where applicable)
+- **Pass struct pointer** as first parameter to functions
+- **Use `typedef struct`** for type definitions
+- **Initialize structs with `memset()`** where appropriate
+- **Native ESP-IDF C APIs** for all hardware interactions

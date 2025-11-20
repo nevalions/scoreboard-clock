@@ -64,12 +64,21 @@ See [AGENTS.md](AGENTS.md) for detailed development commands and workflow.
 
 ### Quick Start
 ```bash
+# Set up ESP-IDF environment (if not already done)
+source ~/esp-idf/export.sh
+
 # Build and flash
 idf.py build flash monitor
 
 # Or build only
 idf.py build
 ```
+
+### Development Environment
+- **Language**: Native C (not C++)
+- **ESP-IDF Version**: v6.1-dev
+- **Target Platform**: ESP32
+- **Build System**: CMake with ESP-IDF
 
 ## Dependencies
 
@@ -79,6 +88,11 @@ idf.py build
 - `driver/spi_master` - SPI communication for radio
 - `freertos` - Task management
 - `esp_log` - Logging system
+
+### Implementation Language
+- **Native C**: Project implemented in pure C (not C++)
+- **Struct-based Design**: Uses C structs instead of classes
+- **ESP-IDF Framework**: Built on ESP-IDF v6.1-dev
 
 All functionality is implemented using ESP-IDF built-in components for maximum reliability and performance.
 
@@ -104,7 +118,8 @@ All functionality is implemented using ESP-IDF built-in components for maximum r
 ### Memory Usage
 - **LED Buffer**: ~2.7KB (900 LEDs × 3 bytes)
 - **Stack Size**: Configured for FreeRTOS tasks
-- **Heap Usage**: Minimal, mainly for radio buffers
+- **Heap Usage**: Minimal, mainly for radio buffers and struct allocation
+- **Code Size**: Optimized C implementation
 
 ### Timing Constraints
 - **Main Loop**: 10ms cycle time

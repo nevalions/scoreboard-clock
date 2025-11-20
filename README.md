@@ -22,11 +22,11 @@ The system consists of multiple networked nodes that communicate wirelessly to p
 scoreboard_clock/
 ├── README.md                 # This file
 ├── AGENTS.md                 # Development guidance for Claude
-├── play_clock/              # ✅ Play Clock module
+├── play_clock/              # ✅ Play Clock module (C implementation)
 │   ├── main/
-│   │   ├── main.cpp         # Main application
-│   │   ├── display_driver.cpp
-│   │   └── radio_comm.cpp
+│   │   ├── main.c           # Main application
+│   │   ├── display_driver.c
+│   │   └── radio_comm.c
 │   │   └── CMakeLists.txt
 │   ├── include/
 │   │   ├── display_driver.h
@@ -77,6 +77,7 @@ nonce: 2B
 **Status**: Implemented and ready for deployment
 **Function**: Displays seconds (SS) on 2 × 100cm digits
 **Hardware**: ESP32 + WS2815 LED strips + Radio module
+**Implementation**: Native C (not C++) for maximum reliability
 
 #### Key Features
 - **Receive-only operation** - No local timing logic
@@ -211,11 +212,13 @@ idf.py menuconfig         # Open configuration menu
 4. **Test radio communication** between modules
 5. **Deploy in network topology** with repeaters as needed
 
+**Note**: Play Clock module is implemented in native C for optimal performance and reliability.
+
 ## 📋 Development Status
 
 | Module | Status | Next Steps |
 |--------|--------|------------|
-| **Play Clock** | ✅ Complete | Field testing, optimization |
+| **Play Clock** | ✅ Complete (C implementation) | Field testing, optimization |
 | **Game Clock** | 🚧 Planned | LED driver adaptation |
 | **Controller** | 🚧 Planned | State machine, UI |
 | **Referee Watch** | 🚧 Planned | UI design, power management |

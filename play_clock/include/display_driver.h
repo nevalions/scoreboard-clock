@@ -2,7 +2,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "driver/rmt_tx.h"
 #include "driver/gpio.h"
 
 // LED strip configuration for Play Clock (mock)
@@ -40,11 +39,19 @@ typedef enum {
     DISPLAY_MODE_LINK_WARNING
 } display_mode_t;
 
-#ifdef __cplusplus
+// Color structure
+typedef struct {
+    uint8_t r, g, b;
+} color_t;
 
-// Play clock display class - displays seconds (SS) only
-class PlayClockDisplay {
-private:
+// Segment LED ranges for 2-digit play clock
+typedef struct {
+    uint16_t start;
+    uint16_t count;
+} segment_range_t;
+
+// Play clock display structure - displays seconds (SS) only
+typedef struct {
     bool initialized;
     display_mode_t current_mode;
     bool link_status;
@@ -55,37 +62,21 @@ private:
     size_t led_buffer_size;
 
     // Segment LED ranges for 2-digit play clock
-    struct {
-        uint16_t start;
-        uint16_t count;
-    } segments[PLAY_CLOCK_DIGITS][SEGMENTS_PER_DIGIT];
+    segment_range_t segments[PLAY_CLOCK_DIGITS][SEGMENTS_PER_DIGIT];
 
     // Color definitions
-    struct {
-        uint8_t r, g, b;
-    } color_off, color_on, color_warning, color_error;
+    color_t color_off;
+    color_t color_on;
+    color_t color_warning;
+    color_t color_error;
+} PlayClockDisplay;
 
-    // Private methods
-    void initSegmentMapping();
-    void setSegment(uint8_t digit, segment_t segment, bool on);
-    void setSegmentColor(uint8_t digit, segment_t segment, uint8_t r, uint8_t g, uint8_t b);
-    void clearDisplay();
-    void updateLEDStrip();
-    void displayDigit(uint8_t digit, uint8_t value);
-    void showLinkWarning();
-
-public:
-    PlayClockDisplay();
-    ~PlayClockDisplay();
-
-    bool begin();
-    void setTime(uint16_t seconds);  // Display seconds (0-99 for play clock)
-    void setLinkStatus(bool connected);
-    void setRunMode();
-    void setStopMode();
-    void setResetMode();
-    void showError();
-    void update();
-};
-
-#endif
+// Function declarations
+bool display_begin(PlayClockDisplay* display);
+void display_set_time(PlayClockDisplay* display, uint16_t seconds);
+void display_set_link_status(PlayClockDisplay* display, bool connected);
+void display_set_run_mode(PlayClockDisplay* display);
+void display_set_stop_mode(PlayClockDisplay* display);
+void display_set_reset_mode(PlayClockDisplay* display);
+void display_show_error(PlayClockDisplay* display);
+void display_update(PlayClockDisplay* display);

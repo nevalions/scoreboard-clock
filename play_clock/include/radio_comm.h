@@ -5,18 +5,14 @@
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
 
-// System state structure (available to both C and C++)
-struct SystemState {
+// System state structure
+typedef struct {
     uint8_t display_state;  // 0=STOP, 1=RUN, 2=RESET
     uint16_t seconds;
     uint8_t sequence;
     uint32_t last_status_time;
     bool link_alive;
-};
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+} SystemState;
 
 // Radio module configuration (nRF24L01+)
 #define NRF24_SPI_HOST    VSPI_HOST
@@ -42,23 +38,17 @@ extern "C" {
 #define PLAYCLOCK_NODE_ID   1
 
 // Status broadcast frame structure (from controller)
-struct __attribute__((packed)) StatusFrame {
+typedef struct __attribute__((packed)) {
     uint8_t frame_type;    // 0xA1
     uint8_t state;         // 0=STOP, 1=RUN, 2=RESET
     uint16_t seconds;      // Current time in seconds
     uint16_t ms_lowres;    // Low resolution milliseconds
     uint8_t sequence;      // Sequence number
     uint8_t crc8;          // CRC checksum
-};
+} StatusFrame;
 
-#ifdef __cplusplus
-}
-#endif
-
-// Radio communication class (C++ only)
-#ifdef __cplusplus
-class RadioComm {
-private:
+// Radio communication structure
+typedef struct {
     bool initialized;
     spi_device_handle_t spi;
     gpio_num_t ce_pin;
@@ -68,33 +58,12 @@ private:
     uint8_t tx_address[5];
     uint8_t rx_address[5];
     uint8_t current_channel;
+} RadioComm;
 
-    // Private methods
-    bool initSPI();
-    bool initRadio();
-    void ceHigh();
-    void ceLow();
-    void csnHigh();
-    void csnLow();
-    uint8_t spiTransfer(uint8_t data);
-    void writeRegister(uint8_t reg, uint8_t value);
-    uint8_t readRegister(uint8_t reg);
-    void writeRegisterMulti(uint8_t reg, const uint8_t* data, uint8_t len);
-    void readRegisterMulti(uint8_t reg, uint8_t* data, uint8_t len);
-    uint8_t calculateCRC8(const uint8_t* data, uint8_t len);
-    bool isCarrierDetected();
-    void powerUp();
-    void setRXMode();
-
-public:
-    RadioComm();
-    ~RadioComm();
-
-    bool begin(gpio_num_t ce, gpio_num_t csn);
-    bool receiveMessage(SystemState& state);
-    void startListening();
-    void stopListening();
-    bool isDataAvailable();
-    void flushRX();
-};
-#endif
+// Function declarations
+bool radio_begin(RadioComm* radio, gpio_num_t ce, gpio_num_t csn);
+bool radio_receive_message(RadioComm* radio, SystemState* state);
+void radio_start_listening(RadioComm* radio);
+void radio_stop_listening(RadioComm* radio);
+bool radio_is_data_available(RadioComm* radio);
+void radio_flush_rx(RadioComm* radio);
