@@ -1,6 +1,6 @@
 [submodule "controller"]
 	path = controller
-	url = ./controller
+	url = git@github.com:nevalions/scoreboard-clock-controller.git
 [submodule "play_clock"]
 	path = play_clock
 	url = git@github.com:nevalions/scoreboard-clock-led-display-esp-ws2815.git
