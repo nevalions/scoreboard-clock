@@ -18,7 +18,6 @@ idf
 
 # Then run build commands
 idf.py build
-idf.py flash monitor
 ```
 
 ### Environment Variables
@@ -32,14 +31,14 @@ The following are automatically configured in your `.zshrc`:
 # Build project
 idf.py build
 
-# Flash to device
-idf.py flash
+# Flash to device (DO NOT USE - build only)
+# idf.py flash
 
-# Monitor serial output
-idf.py monitor
+# Monitor serial output (DO NOT USE - build only)
+# idf.py monitor
 
-# Build and flash in one command
-idf.py build flash monitor
+# Build and flash in one command (DO NOT USE - build only)
+# idf.py build flash monitor
 
 # Clean build
 idf.py fullclean
@@ -47,6 +46,8 @@ idf.py fullclean
 # Configure project
 idf.py menuconfig
 ```
+
+**IMPORTANT**: This project should only be built, never flashed to hardware. Use `idf.py build` only.
 
 ### Testing
 ```bash
@@ -56,7 +57,7 @@ idf.py build
 # Run specific test (edit test file app_main() to select test)
 # Edit test/test_*.c files to run individual tests
 # Flash test firmware:
-idf.py flash monitor
+# idf.py flash monitor
 ```
 
 ### Git Workflow (Recursive Commits)
