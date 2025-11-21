@@ -13,25 +13,25 @@ The system is composed of several networked nodes:
 ### Node Types
 
 1. **Controller (Master)**
-   - ESP32 + SX1278 (868 MHz)
+   - ESP32 + nRF24L01+
    - Maintains official time/state
-   - Broadcasts status every 100-200ms
-   - Handles command packets from referee watch
-   - Libraries: RF24, RF24Mesh
+   - Sends commands to Play Clock on button press
+   - Sends time updates every 10 seconds when running
+   - 3 control buttons: START, STOP, RESET
 
 2. **Scoreboard Play Clock Module**
    - 2 × 100cm digits displaying seconds (SS)
-   - ESP32 + SX1278 receiver
+   - ESP32 + nRF24L01+ receiver
    - Listens to controller broadcasts only
    - WS2815 12V LED strips, 60 LEDs/m
 
 3. **Game Clock Module**
    - 4 × 60cm digits displaying minutes and seconds (MM:SS)
-   - ESP32 + SX1278 receiver
+   - ESP32 + nRF24L01+ receiver
    - WS2815 12V LED strips, 60 LEDs/m
 
 4. **Referee Watch**
-   - ESP32 + SX1278 transmitter
+   - ESP32 + nRF24L01+ transmitter
    - LCD display with time and status
    - Sends START/STOP/RESET commands to controller
    - Button debouncing (≥20ms)
@@ -46,13 +46,13 @@ The system is composed of several networked nodes:
 
 ### Radio Module Settings (nRF24L01)
 
-- **Data rate:** 250 kbps (best sensitivity/range)
-- **Channel:** 100 (≈2.500 GHz) - above busy Wi-Fi range
-- **Power level:** MAX on PA/LNA modules for controller/repeaters, medium/low on watch
-- **Auto-ACK & retries:** Enabled, ARC=15 retries, ARD=1500 µs
+- **Data rate:** 1 Mbps
+- **Channel:** 76 (2.476 GHz)
+- **Power level:** 0 dBm
+- **Auto-ACK:** Enabled
 - **Dynamic payloads:** ON (≤32 bytes)
 - **CRC:** 16-bit
-- **Address width:** 5 bytes
+- **Address:** 0xE7E7E7E7E7
 
 ### Addressing
 
@@ -62,23 +62,12 @@ The system is composed of several networked nodes:
 
 ## Protocol Structure
 
-### Status Broadcast Frame (≤32 bytes)
+### Command Frame (Controller to Play Clock)
 
 ```
-type=0xA1  // status
-state: 1B  // 0=STOP,1=RUN,2=RESET
+cmd: 1B    // 0=STOP,1=RUN,2=RESET
 seconds: 2B
-ms_lowres: 2B  // 0..999/10 for tenths
 seq: 1B
-crc8: 1B
-```
-
-### Command Frame (Watch to Controller)
-
-```
-type=0xB1  // command
-cmd: 1B    // 1=START,2=STOP,3=RESET
-nonce: 2B
 ```
 
 ## Hardware Specifications
@@ -119,10 +108,8 @@ nonce: 2B
 
 ### Timing Requirements
 
-- Broadcast interval: 100-200ms from controller
-- Command round-trip: typical 30-80ms with one hop
-- Each hop adds only a few ms at 250kbps
-- Supports 2-3 hops without significant latency
+- Time update interval: 10 seconds from controller when running
+- Command transmission: Immediate on button press
 - ESP32 project using ESP-IDF framework (no Arduino code/imports)
 - LED display modules are receive-only, displaying data from controller (master)
-- Play Clock module is fully implemented with CMake build system
+- Play Clock and Controller modules are fully implemented with CMake build system

@@ -10,11 +10,11 @@ The system consists of multiple networked nodes that communicate wirelessly to p
 
 | Node | Function | Radio | Display | Role |
 |------|----------|-------|---------|------|
-| **Controller** | Master timing control | SX1278 (868 MHz) | OLED/LCD status | Broadcasts timing data |
-| **Play Clock** | Seconds display (SS) | SX1278/nRF24L01+ | 2×100cm digits | Receive-only display |
-| **Game Clock** | Minutes:Seconds (MM:SS) | SX1278/nRF24L01+ | 4×60cm digits | Receive-only display |
-| **Referee Watch** | Remote control | SX1278 | LCD + buttons | Sends commands |
-| **Repeaters** | Network extension | SX1278 | None | Mesh routing |
+| **Controller** | Master timing control | nRF24L01+ | Buttons only | Sends commands to Play Clock |
+| **Play Clock** | Seconds display (SS) | nRF24L01+ | 2×100cm digits | Receive-only display |
+| **Game Clock** | Minutes:Seconds (MM:SS) | nRF24L01+ | 4×60cm digits | Receive-only display |
+| **Referee Watch** | Remote control | nRF24L01+ | LCD + buttons | Sends commands |
+| **Repeaters** | Network extension | nRF24L01+ | None | Mesh routing |
 
 ## 📁 Project Structure
 
@@ -35,7 +35,7 @@ scoreboard_clock/
 │   ├── sdkconfig.defaults    # ESP-IDF configuration
 │   └── README.md            # Module-specific docs
 ├── game_clock/              # 🚧 Game Clock module (planned)
-├── controller/              # 🚧 Controller module (planned)
+├── controller/              # ✅ Controller module (implemented)
 ├── referee_watch/           # 🚧 Referee Watch module (planned)
 └── repeater/                # 🚧 Repeater module (planned)
 ```
@@ -43,31 +43,21 @@ scoreboard_clock/
 ## 📡 Radio Communication
 
 ### Common Settings (nRF24L01+)
-- **Data Rate**: 250 kbps (best sensitivity/range)
-- **Channel**: 100 (≈2.500 GHz, above Wi-Fi)
-- **Power Level**: MAX on Controller/Repeaters, medium/low on Watch
-- **Auto-ACK**: Enabled with 15 retries, 1500µs delay
+- **Data Rate**: 1 Mbps
+- **Channel**: 76 (2.476 GHz)
+- **Power Level**: 0 dBm
+- **Address**: 0xE7E7E7E7E7
+- **Auto-ACK**: Enabled
 - **Dynamic Payloads**: ON (≤32 bytes)
 - **CRC**: 16-bit validation
-- **Address Width**: 5 bytes
 
 ### Protocol Structure
 
-**Status Broadcast Frame (≤32 bytes)**
+**Command Frame (Controller → Play Clock)**
 ```
-type=0xA1  // status frame
-state: 1B  // 0=STOP, 1=RUN, 2=RESET
+cmd: 1B    // 0=STOP, 1=RUN, 2=RESET
 seconds: 2B
-ms_lowres: 2B  // 0..999/10 for tenths
 seq: 1B
-crc8: 1B
-```
-
-**Command Frame (Watch → Controller)**
-```
-type=0xB1  // command frame
-cmd: 1B    // 1=START, 2=STOP, 3=RESET
-nonce: 2B
 ```
 
 ## 🔧 Module Details
@@ -130,23 +120,26 @@ nonce: 2B
 
 ---
 
-### 🚧 Controller Module (`/controller/`)
+### ✅ Controller Module (`/controller/`)
 
-**Status**: Planned - Not yet implemented
-**Function**: Master timing control and system coordinator
-**Hardware**: ESP32 + SX1278 (868 MHz) + Buttons + OLED/LCD
+**Status**: Implemented and ready for deployment
+**Function**: Master timing control and command transmitter
+**Hardware**: ESP32 + nRF24L01+ + 3 Control Buttons
 
-#### Planned Responsibilities
-- **Maintain official time/state** for entire system
-- **Broadcast status** every 100-200ms to all display modules
-- **Process commands** from Referee Watch
-- **Mesh address assignment** (if using RF24Mesh)
-- **System synchronization** and error handling
+#### Key Features
+- **3 Control Buttons**: START, STOP, RESET
+- **Time Tracking**: Maintains internal time counter
+- **Auto-Updates**: Sends time updates every 10 seconds when running
+- **Command Transmission**: Sends control commands to Play Clock
 
-#### User Interface
-- Start/Stop/Reset buttons
-- Status display (OLED/LCD)
-- System health indicators
+#### Hardware Specifications
+- **Radio**: nRF24L01+ with CE on GPIO5, CSN on GPIO4
+- **Buttons**: START (GPIO0), STOP (GPIO2), RESET (GPIO15)
+- **SPI**: Standard ESP32 pins (SCK=18, MOSI=23, MISO=19)
+
+#### Documentation
+- See [`/controller/README.md`](./controller/README.md) for detailed documentation
+- Includes pin configurations, build instructions, and operation guide
 
 ---
 
@@ -220,7 +213,7 @@ idf.py menuconfig         # Open configuration menu
 |--------|--------|------------|
 | **Play Clock** | ✅ Complete (C implementation) | Field testing, optimization |
 | **Game Clock** | 🚧 Planned | LED driver adaptation |
-| **Controller** | 🚧 Planned | State machine, UI |
+| **Controller** | ✅ Complete (C implementation) | Integration testing with Play Clock |
 | **Referee Watch** | 🚧 Planned | UI design, power management |
 | **Repeater** | 🚧 Planned | Mesh networking setup |
 

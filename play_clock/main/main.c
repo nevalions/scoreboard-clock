@@ -46,6 +46,11 @@ static void setup(void) {
   }
 
   radio_start_listening(&radio);
+  
+  // Dump radio registers for debugging
+  vTaskDelay(pdMS_TO_TICKS(100)); // Let radio settle
+  radio_dump_registers(&radio);
+  
   display_set_link_status(&display, false);
   display_set_stop_mode(&display);
 
@@ -54,6 +59,9 @@ static void setup(void) {
 
 static void loop(void) {
   uint32_t current_time = xTaskGetTickCount() * portTICK_PERIOD_MS;
+
+  // Enable debug logging temporarily
+  esp_log_level_set("RADIO_COMM", ESP_LOG_DEBUG);
 
   if (radio_receive_message(&radio, &system_state)) {
     system_state.last_status_time = current_time;
