@@ -7,8 +7,6 @@
 
 static const char *TAG = "DISPLAY_DRIVER";
 
-
-
 bool display_begin(PlayClockDisplay *display) {
   ESP_LOGI(TAG, "Initializing display");
 
@@ -31,8 +29,6 @@ bool display_begin(PlayClockDisplay *display) {
   display->color_on = (color_t){255, 255, 255};
   display->color_warning = (color_t){255, 165, 0}; // Orange
   display->color_error = (color_t){255, 0, 0};
-
-
 
   display->initialized = true;
   ESP_LOGI(TAG, "Display initialized successfully");
@@ -102,5 +98,3 @@ void display_update(PlayClockDisplay *display) {
     display->last_update_time = current_time;
   }
 }
-
-
