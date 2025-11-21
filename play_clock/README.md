@@ -21,13 +21,9 @@ The Play Clock module is a receive-only display unit that:
 ### Pin Configuration
 | Function | Pin | Description |
 |----------|-----|-------------|
-| LED Data | GPIO13 | RMT channel 0 for WS2815 control |
-| Radio CE | GPIO4 | Radio chip enable |
-| Radio CSN | GPIO5 | Radio chip select |
+| Radio CE | GPIO5 | Radio chip enable |
+| Radio CSN | GPIO4 | Radio chip select |
 | Status LED | GPIO2 | System status indicator |
-| SPI MOSI | GPIO23 | SPI data out (nRF24L01+) |
-| SPI MISO | GPIO19 | SPI data in (nRF24L01+) |
-| SPI SCK | GPIO18 | SPI clock (nRF24L01+) |
 
 ### Display Specifications
 - **Digits**: 2 (seconds display - SS format)
@@ -46,16 +42,13 @@ The Play Clock module is a receive-only display unit that:
 - **Error Display**: Shows error pattern on hardware failure
 
 ### Communication Protocol
-- **Frame Type**: 0xA1 (Status frame)
-- **Data Rate**: 250kbps
-- **Channel**: 100 (2.500 GHz)
-- **Update Rate**: Every 100-200ms from controller
-- **Node ID**: 1 (Play Clock node)
-- **Controller ID**: 0 (Master node)
+- **Mock Implementation**: Currently using simulated radio communication
+- **Update Rate**: Every 5 seconds (mock data generation)
+- **Future**: Will implement nRF24L01+ wireless protocol
 
 ### Link Monitoring
-- **Timeout Detection**: 800ms without status triggers warning
-- **Visual Indicator**: Middle segment blinks on link loss
+- **Timeout Detection**: 10 seconds without status triggers warning
+- **Visual Indicator**: Status LED blinks on link loss
 - **Auto-Recovery**: Normal operation resumes when connection restored
 
 ## Build and Flash
@@ -64,8 +57,8 @@ See [AGENTS.md](AGENTS.md) for detailed development commands and workflow.
 
 ### Quick Start
 ```bash
-# Set up ESP-IDF environment (if not already done)
-source ~/esp-idf/export.sh
+# Activate ESP-IDF environment
+idf
 
 # Build and flash
 idf.py build flash monitor
@@ -84,8 +77,6 @@ idf.py build
 
 ### ESP-IDF Components
 - `driver/gpio` - GPIO control
-- `driver/rmt` - LED strip control
-- `driver/spi_master` - SPI communication for radio
 - `freertos` - Task management
 - `esp_log` - Logging system
 
@@ -116,17 +107,16 @@ All functionality is implemented using ESP-IDF built-in components for maximum r
 ## Technical Specifications
 
 ### Memory Usage
-- **LED Buffer**: ~2.7KB (900 LEDs × 3 bytes)
+- **LED Buffer**: ~2.7KB (900 LEDs × 3 bytes, mock allocation)
 - **Stack Size**: Configured for FreeRTOS tasks
-- **Heap Usage**: Minimal, mainly for radio buffers and struct allocation
+- **Heap Usage**: Minimal, mainly for struct allocation
 - **Code Size**: Optimized C implementation
 
 ### Timing Constraints
-- **Main Loop**: 10ms cycle time
-- **LED Updates**: Async via RMT hardware
-- **Radio Reception**: Event-driven, non-blocking
+- **Main Loop**: 50ms cycle time
+- **Mock Updates**: Every 1 second for display, 5 seconds for radio data
 
 ### Power Consumption
-- **ESP32**: ~160-260mA (depending on radio activity)
-- **LED Strip**: 3-6A at 12V (depending on display content)
-- **Radio**: ~15mA (receive mode)
+- **ESP32**: ~160-200mA (base operation)
+- **Future LED Strip**: 3-6A at 12V (when implemented)
+- **Future Radio**: ~15mA (receive mode)
