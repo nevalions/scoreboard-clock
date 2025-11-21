@@ -59,6 +59,31 @@ idf.py build
 idf.py flash monitor
 ```
 
+### Git Workflow (Recursive Commits)
+
+Since this is a submodule of the parent scoreboard_clock repository, commits must be handled recursively:
+
+```bash
+# Step 1: Commit and push changes in the submodule
+git add .
+git commit -m "your commit message"
+git push
+
+# Step 2: Update parent repository to point to new commit
+cd ..  # Go to parent repository
+git add play_clock
+git commit -m "Update play_clock submodule"
+git push
+
+# OR use the automated recursive workflow:
+git submodule update --remote --merge
+git add play_clock
+git commit -m "Update submodule"
+git push
+```
+
+**Important**: Always commit submodule changes first, then update the parent repository to reference the new commit. The parent repo only tracks which commit the submodule points to, not the submodule content directly.
+
 ## Code Style Guidelines
 
 ### Formatting
