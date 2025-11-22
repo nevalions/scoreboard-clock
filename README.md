@@ -14,7 +14,7 @@ The system consists of multiple networked nodes that communicate wirelessly to p
 | **Play Clock** | Seconds display (SS) | nRF24L01+ | 2×100cm digits | Receive-only display |
 | **Game Clock** | Minutes:Seconds (MM:SS) | nRF24L01+ | 4×60cm digits | Receive-only display |
 | **Referee Watch** | Remote control | nRF24L01+ | LCD + buttons | Sends commands |
-| **Repeaters** | Network extension | nRF24L01+ | None | Mesh routing |
+| **Repeaters** | Network extension | nRF24L01+ | Status LED | Packet forwarding |
 
 ## 📁 Project Structure
 
@@ -26,7 +26,7 @@ scoreboard_clock/
 ├── controller/              # ✅ Controller module (implemented)
 ├── game_clock/              # 🚧 Game Clock module (planned)
 ├── referee_watch/           # 🚧 Referee Watch module (planned)
-└── repeater/                # 🚧 Repeater module (planned)
+└── repeater/                # ✅ Repeater module (implemented)
 ```
 
 ## 📡 Radio Communication
@@ -162,17 +162,33 @@ sequence: 1B        // Sequence number (0-255, wraps)
 
 ---
 
-### 🚧 Repeater Module (`/repeater/`)
+### ✅ Repeater Module (`/repeater/`)
 
-**Status**: Planned - Not yet implemented
-**Function**: Network range extension
-**Hardware**: ESP32 + SX1278 (mains powered)
+**Status**: Implemented and ready for deployment
+**Function**: Network range extension through packet forwarding
+**Hardware**: ESP32 + nRF24L01+ + Status LED
 
-#### Planned Features
-- **Passive mesh routing** - No application logic
-- **High placement** (2.5-4m) for optimal coverage
-- **Automatic failover** and route discovery
-- **Mains powered** with battery backup option
+#### Key Features
+- **Transparent operation** - Controller and Play Clock work unchanged
+- **Packet forwarding** - Receives and immediately retransmits time data
+- **Status monitoring** - Built-in LED shows network activity
+- **Statistics tracking** - Logs packet counts and link status every 30 seconds
+- **Simple deployment** - USB or external power, no configuration needed
+
+#### Hardware Specifications
+- **Radio**: nRF24L01+ with CE on GPIO5, CSN on GPIO4
+- **Status LED**: Built-in GPIO2 LED
+- **SPI**: Standard ESP32 pins (SCK=18, MOSI=23, MISO=19)
+- **Power**: 5V USB or external power supply
+
+#### Operation
+- **Fast blink** (200ms): Active packet forwarding
+- **Slow blink** (1000ms): Idle/no activity
+- **Statistics**: Packets received/retransmitted count and link status
+
+#### Documentation
+- See [`/repeater/README.md`](./repeater/README.md) for detailed documentation
+- Includes wiring diagram, placement tips, and integration guide
 
 ## 🚀 Quick Start
 
@@ -218,7 +234,7 @@ idf.py menuconfig         # Open configuration menu
 | **Game Clock** | 🚧 Planned | LED driver adaptation |
 | **Controller** | ✅ Complete (C implementation) | System integration testing |
 | **Referee Watch** | 🚧 Planned | UI design, power management |
-| **Repeater** | 🚧 Planned | Mesh networking setup |
+| **Repeater** | ✅ Complete (C implementation) | Field testing, range optimization |
 
 ## 🔗 Technical Documentation
 

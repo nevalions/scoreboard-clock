@@ -7,3 +7,6 @@
 [submodule "repeater"]
 	path = repeater
 	url = git@github.com:nevalions/scoreboard-clock-repeater-nRF24L01.git
+[submodule "radio-common"]
+	path = radio-common
+	url = https://github.com/nevalions/scoreboard-clock-radio-common-nrf24.git
