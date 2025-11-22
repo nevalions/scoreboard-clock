@@ -4,3 +4,6 @@
 [submodule "play_clock"]
 	path = play_clock
 	url = git@github.com:nevalions/scoreboard-clock-led-display-esp-ws2815.git
+[submodule "repeater"]
+	path = repeater
+	url = git@github.com:nevalions/scoreboard-clock-repeater-nRF24L01.git
