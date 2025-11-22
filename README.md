@@ -198,6 +198,27 @@ sequence: 1B        // Sequence number (0-255, wraps)
 - WS2815 LED strips and appropriate power supplies
 - Radio modules (nRF24L01+ or SX1278)
 
+### Cloning the Repository
+
+This project uses Git submodules for modular development. To clone the repository with all submodules:
+
+**Using Git:**
+```bash
+git clone --recursive https://github.com/nevalions/scoreboard-clock.git
+cd scoreboard-clock
+```
+
+**Or if already cloned:**
+```bash
+git submodule update --init --recursive
+```
+
+**Using GitHub CLI:**
+```bash
+gh repo clone nevalions/scoreboard-clock --recursive
+cd scoreboard-clock
+```
+
 ### Building the Modules
 
 **Play Clock Module**
