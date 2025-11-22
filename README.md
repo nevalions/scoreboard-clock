@@ -10,7 +10,7 @@ The system consists of multiple networked nodes that communicate wirelessly to p
 
 | Node | Function | Radio | Display | Role |
 |------|----------|-------|---------|------|
-| **Controller** | Master timing control | nRF24L01+ | Buttons only | Sends commands to Play Clock |
+| **Controller** | Master timing control | nRF24L01+ | Status LED | Sends time data to Play Clock |
 | **Play Clock** | Seconds display (SS) | nRF24L01+ | 2×100cm digits | Receive-only display |
 | **Game Clock** | Minutes:Seconds (MM:SS) | nRF24L01+ | 4×60cm digits | Receive-only display |
 | **Referee Watch** | Remote control | nRF24L01+ | LCD + buttons | Sends commands |
@@ -53,12 +53,14 @@ scoreboard_clock/
 
 ### Protocol Structure
 
-**Command Frame (Controller → Play Clock)**
+**Time Data Frame (Controller → Play Clock)**
 ```
-cmd: 1B    // 0=STOP, 1=RUN, 2=RESET
-seconds: 2B
-seq: 1B
+seconds_high: 1B    // High byte of seconds value
+seconds_low: 1B     // Low byte of seconds value  
+sequence: 1B        // Sequence number (0-255, wraps)
 ```
+
+**Note**: The controller uses a simplified time-only protocol where the receiver infers start/stop/reset commands from time value changes.
 
 ## 🔧 Module Details
 
@@ -66,14 +68,16 @@ seq: 1B
 
 **Status**: Implemented and ready for deployment
 **Function**: Displays seconds (SS) on 2 × 100cm digits
-**Hardware**: ESP32 + WS2815 LED strips + Radio module
+**Hardware**: ESP32 + WS2815 LED strips + nRF24L01+ module
 **Implementation**: Native C (not C++) for maximum reliability
 
 #### Key Features
-- **Receive-only operation** - No local timing logic
+- **Pure display operation** - Shows received time data without local logic
 - **2-digit 7-segment display** for seconds (00-99)
-- **Link monitoring** with visual warnings on connection loss
+- **Smart connection monitoring** with status LED feedback
 - **Automatic recovery** when controller reconnects
+- **Timeout detection** with visual warnings after 10 seconds
+- **Real-time updates** - Immediate display updates when data received
 
 #### Hardware Specifications
 - **LED Type**: WS2815 12V (dual data lines for reliability)
@@ -123,19 +127,25 @@ seq: 1B
 ### ✅ Controller Module (`/controller/`)
 
 **Status**: Implemented and ready for deployment
-**Function**: Master timing control and command transmitter
-**Hardware**: ESP32 + nRF24L01+ + 3 Control Buttons
+**Function**: Master timing control and time data transmitter
+**Hardware**: ESP32 + nRF24L01+ + Single Control Button + Status LED
 
 #### Key Features
-- **3 Control Buttons**: START, STOP, RESET
+- **Single Smart Button**: Press duration detection for start/stop/reset
 - **Time Tracking**: Maintains internal time counter
-- **Auto-Updates**: Sends time updates every 10 seconds when running
-- **Command Transmission**: Sends control commands to Play Clock
+- **Continuous Updates**: Sends time data every 250ms when running
+- **Link Monitoring**: Status LED shows radio link quality
+- **Enhanced Logging**: Success/failure tracking and periodic status reports
 
 #### Hardware Specifications
 - **Radio**: nRF24L01+ with CE on GPIO5, CSN on GPIO4
-- **Buttons**: START (GPIO0), STOP (GPIO2), RESET (GPIO15)
+- **Control Button**: GPIO0 (internal pull-up, press to GND)
+- **Status LED**: GPIO17 (external LED recommended)
 - **SPI**: Standard ESP32 pins (SCK=18, MOSI=23, MISO=19)
+
+#### Button Operation
+- **Short Press** (< 2 seconds): Toggle start/stop
+- **Long Press** (≥ 2 seconds): Reset timer to 00:00 and stop
 
 #### Documentation
 - See [`/controller/README.md`](./controller/README.md) for detailed documentation
@@ -183,18 +193,22 @@ seq: 1B
 - WS2815 LED strips and appropriate power supplies
 - Radio modules (nRF24L01+ or SX1278)
 
-### Building the Play Clock Module
+### Building the Modules
 
+**Play Clock Module**
 ```bash
-# Navigate to the play clock module
 cd play_clock/
+idf.py build flash monitor
+```
 
-# Using ESP-IDF
-idf.py build              # Build the project
-idf.py flash              # Flash to device
-idf.py monitor            # View serial output
+**Controller Module**
+```bash
+cd controller/
+idf.py build flash monitor
+```
 
-# Configure project (optional)
+**Configure Project (optional)**
+```bash
 idf.py menuconfig         # Open configuration menu
 ```
 
@@ -211,9 +225,9 @@ idf.py menuconfig         # Open configuration menu
 
 | Module | Status | Next Steps |
 |--------|--------|------------|
-| **Play Clock** | ✅ Complete (C implementation) | Field testing, optimization |
+| **Play Clock** | ✅ Complete (C implementation) | Field testing, integration |
 | **Game Clock** | 🚧 Planned | LED driver adaptation |
-| **Controller** | ✅ Complete (C implementation) | Integration testing with Play Clock |
+| **Controller** | ✅ Complete (C implementation) | System integration testing |
 | **Referee Watch** | 🚧 Planned | UI design, power management |
 | **Repeater** | 🚧 Planned | Mesh networking setup |
 

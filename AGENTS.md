@@ -15,9 +15,9 @@ The system is composed of several networked nodes:
 1. **Controller (Master)**
    - ESP32 + nRF24L01+
    - Maintains official time/state
-   - Sends commands to Play Clock on button press
-   - Sends time updates every 10 seconds when running
-   - 3 control buttons: START, STOP, RESET
+   - Sends time data to Play Clock continuously (250ms interval)
+   - Single smart button with press duration detection
+   - Status LED for link quality indication
 
 2. **Scoreboard Play Clock Module**
    - 2 × 100cm digits displaying seconds (SS)
@@ -62,13 +62,18 @@ The system is composed of several networked nodes:
 
 ## Protocol Structure
 
-### Command Frame (Controller to Play Clock)
+### Time Data Frame (Controller to Play Clock)
 
 ```
-cmd: 1B    // 0=STOP,1=RUN,2=RESET
-seconds: 2B
-seq: 1B
+seconds_high: 1B    // High byte of seconds value
+seconds_low: 1B     // Low byte of seconds value
+sequence: 1B        // Sequence number (0-255, wraps)
 ```
+
+**Protocol Notes:**
+- Controller sends continuous time data every 250ms
+- Receiver infers start/stop/reset from time value changes
+- No explicit command bytes - time changes drive state transitions
 
 ## Hardware Specifications
 
@@ -101,15 +106,17 @@ seq: 1B
 
 ### Communication Reliability
 
-- Link loss detection: if no status for 800ms, blink middle segment as warning
+- Link loss detection: if no data for 10 seconds, status LED indicates warning
 - CRC8 validation for data integrity
 - Sequence numbers for packet tracking
 - Automatic mesh rerouting on node failure
+- Controller monitors transmission success rate with status LED feedback
 
 ### Timing Requirements
 
-- Time update interval: 10 seconds from controller when running
-- Command transmission: Immediate on button press
+- Time update interval: 250ms from controller when running (4Hz)
+- Button press detection: Immediate with duration-based logic
+- Link timeout detection: 10 seconds in Play Clock module
 - ESP32 project using ESP-IDF framework (no Arduino code/imports)
 - LED display modules are receive-only, displaying data from controller (master)
 - Play Clock and Controller modules are fully implemented with CMake build system
