@@ -22,20 +22,9 @@ The system consists of multiple networked nodes that communicate wirelessly to p
 scoreboard_clock/
 ├── README.md                 # This file
 ├── AGENTS.md                 # Development guidance for Claude
-├── play_clock/              # ✅ Play Clock module (C implementation)
-│   ├── main/
-│   │   ├── main.c           # Main application
-│   │   ├── display_driver.c
-│   │   └── radio_comm.c
-│   │   └── CMakeLists.txt
-│   ├── include/
-│   │   ├── display_driver.h
-│   │   └── radio_comm.h
-│   ├── CMakeLists.txt        # Root CMake for module
-│   ├── sdkconfig.defaults    # ESP-IDF configuration
-│   └── README.md            # Module-specific docs
-├── game_clock/              # 🚧 Game Clock module (planned)
+├── play_clock/              # ✅ Play Clock module (implemented)
 ├── controller/              # ✅ Controller module (implemented)
+├── game_clock/              # 🚧 Game Clock module (planned)
 ├── referee_watch/           # 🚧 Referee Watch module (planned)
 └── repeater/                # 🚧 Repeater module (planned)
 ```
