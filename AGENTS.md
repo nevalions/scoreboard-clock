@@ -1,4 +1,4 @@
-# Development Guidelines
+# Agent Guidelines
 
 Technical specifications and development standards for the ESP32-based scoreboard timer system.
 
@@ -11,11 +11,11 @@ Modular wireless scoreboard system using ESP32 microcontrollers, WS2815 LED stri
 
 | Module | Role | Radio | Display | Status |
 |--------|------|-------|---------|--------|
-| **Controller** | Master timing control | nRF24L01+ | Status LED | ✅ Complete (C) |
-| **Play Clock** | Seconds display (SS) | nRF24L01+ | 2×100cm digits | ✅ Complete (C) |
-| **Game Clock** | MM:SS display | nRF24L01+ | 4×60cm digits | 🚧 Planned |
-| **Referee Watch** | Remote control | nRF24L01+ | LCD + buttons | 🚧 Planned |
-| **Repeater** | Network extension | nRF24L01+ | Status LED | ✅ Complete (C) |
+| **Controller** | Master timing control | nRF24L01+ | Status LED | 🚧 In Development |
+| **Play Clock** | Seconds display (SS) | nRF24L01+ | 2×100cm digits | 🚧 In Development |
+| **Game Clock** | MM:SS display | nRF24L01+ | 4×60cm digits | 🚧 In Development |
+| **Referee Watch** | Remote control | nRF24L01+ | LCD + buttons | 🚧 In Development |
+| **Repeater** | Network extension | nRF24L01+ | Status LED | 🚧 In Development |
 
 ## Radio Communication Protocol
 

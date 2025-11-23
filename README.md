@@ -8,24 +8,24 @@ The system consists of networked nodes that communicate wirelessly to provide sy
 
 | Module | Status | Role | Display | Interface |
 |--------|--------|------|---------|-----------|
-| **Controller** | ✅ Complete | Master timing control | Status LED | Smart button |
-| **Play Clock** | ✅ Complete | Seconds display (SS) | 2×100cm digits | Receive-only |
-| **Game Clock** | 🚧 Planned | Minutes:Seconds (MM:SS) | 4×60cm digits | Receive-only |
-| **Referee Watch** | 🚧 Planned | Remote control | LCD + buttons | Multiple buttons |
-| **Repeater** | ✅ Complete | Network extension | Status LED | Automatic |
+| **Controller** | 🚧 In Development | Master timing control | Status LED | Smart button |
+| **Play Clock** | 🚧 In Development | Seconds display (SS) | 2×100cm digits | Receive-only |
+| **Game Clock** | 🚧 In Development | Minutes:Seconds (MM:SS) | 4×60cm digits | Receive-only |
+| **Referee Watch** | 🚧 In Development | Remote control | LCD + buttons | Multiple buttons |
+| **Repeater** | 🚧 In Development | Network extension | Status LED | Automatic |
 
 ## Project Structure
 
 ```
 scoreboard_clock/
 ├── README.md                 # Project overview
-├── AGENTS.md                 # Development guidelines
+├── AGENTS.md                 # Agent guidelines
 ├── LICENSE                   # MIT License
-├── play_clock/              # ✅ Play Clock module
-├── controller/              # ✅ Controller module  
-├── repeater/                # ✅ Repeater module
-├── game_clock/              # 🚧 Game Clock module (planned)
-├── referee_watch/           # 🚧 Referee Watch module (planned)
+├── play_clock/              # 🚧 Play Clock module
+├── controller/              # 🚧 Controller module  
+├── repeater/                # 🚧 Repeater module
+├── game_clock/              # 🚧 Game Clock module
+├── referee_watch/           # 🚧 Referee Watch module
 └── radio-common/            # 📦 Shared radio library
 ```
 
@@ -126,14 +126,14 @@ idf.py menuconfig
 
 | Module | Status | Notes |
 |--------|--------|-------|
-| **Play Clock** | ✅ Complete | Native C, field-tested |
-| **Controller** | ✅ Complete | Native C, operational |
-| **Repeater** | ✅ Complete | Native C, tested |
-| **Game Clock** | 🚧 Planned | LED driver adaptation |
-| **Referee Watch** | 🚧 Planned | UI design, power management |
+| **Play Clock** | 🚧 In Development | Native C implementation |
+| **Controller** | 🚧 In Development | Native C implementation |
+| **Repeater** | 🚧 In Development | Native C implementation |
+| **Game Clock** | 🚧 In Development | LED driver adaptation |
+| **Referee Watch** | 🚧 In Development | UI design, power management |
 
 ## Documentation
 
-- **Development Guidelines**: [`AGENTS.md`](./AGENTS.md) - Technical specifications and coding standards
+- **Agent Guidelines**: [`AGENTS.md`](./AGENTS.md) - Technical specifications and coding standards
 - **Module Documentation**: Individual README files in each module directory
 - **Radio Protocol**: Detailed communication specifications in AGENTS.md
