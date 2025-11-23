@@ -10,3 +10,6 @@
 [submodule "radio-common"]
 	path = radio-common
 	url = https://github.com/nevalions/scoreboard-clock-radio-common-nrf24.git
+[submodule "sport_selector"]
+	path = sport_selector
+	url = git@github.com:nevalions/scoreboard-playclock-select-sport.git
