@@ -1,130 +1,126 @@
 # AGENTS.md - Development Guidelines
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Development guidance for Claude Code (claude.ai/code) working with this ESP32-based scoreboard timer system.
 
-## Project Overview
+## Technical Architecture
 
-This is a modular scoreboard timer system designed for sports timing, based on ESP32 microcontrollers and WS2815 LED strips. The system consists of multiple wireless modules that communicate via radio modules. Currently implemented: Play Clock, Controller, and Repeater modules with ESP32 framework.
+### System Overview
+Modular wireless scoreboard system using ESP32 microcontrollers, WS2815 LED strips, and nRF24L01+ radio modules for sports timing applications.
 
-## System Architecture
+### Node Types & Responsibilities
 
-The system is composed of several networked nodes:
+| Module | Role | Radio | Display | Implementation Status |
+|--------|------|-------|---------|----------------------|
+| **Controller** | Master timing control | nRF24L01+ | Status LED | ✅ Complete (C) |
+| **Play Clock** | Seconds display (SS) | nRF24L01+ | 2×100cm digits | ✅ Complete (C) |
+| **Game Clock** | MM:SS display | nRF24L01+ | 4×60cm digits | 🚧 Planned |
+| **Referee Watch** | Remote control | nRF24L01+ | LCD + buttons | 🚧 Planned |
+| **Repeater** | Network extension | nRF24L01+ | Status LED | ✅ Complete (C) |
 
-### Node Types
+## Radio Communication Protocol
 
-1. **Controller (Master)**
-   - ESP32 + nRF24L01+
-   - Maintains official time/state
-   - Sends time data to Play Clock continuously (250ms interval)
-   - Single smart button with press duration detection
-   - Status LED for link quality indication
+### nRF24L01+ Configuration
+- **Data Rate**: 1 Mbps
+- **Channel**: 76 (2.476 GHz)
+- **Power Level**: 0 dBm
+- **Address**: 0xE7E7E7E7E7
+- **Auto-ACK**: Enabled
+- **Dynamic Payloads**: ON (≤32 bytes)
+- **CRC**: 16-bit validation
 
-2. **Scoreboard Play Clock Module**
-   - 2 × 100cm digits displaying seconds (SS)
-   - ESP32 + nRF24L01+ receiver
-   - Listens to controller broadcasts only
-   - WS2815 12V LED strips, 60 LEDs/m
+### Network Topology
+- **RF24Mesh**: Dynamic address allocation
+- **Controller**: Master node (nodeID 0)
+- **Automatic route discovery** and failover
+- **Transparent repeaters** for range extension
 
-3. **Game Clock Module**
-   - 4 × 60cm digits displaying minutes and seconds (MM:SS)
-   - ESP32 + nRF24L01+ receiver
-   - WS2815 12V LED strips, 60 LEDs/m
-
-4. **Referee Watch**
-   - ESP32 + nRF24L01+ transmitter
-   - LCD display with time and status
-   - Sends START/STOP/RESET commands to controller
-   - Button debouncing (≥20ms)
-   - Retry mechanism: up to 3 retries if no ACK within 80-120ms
-
-5. **Repeaters (R1/R2/R3)**
-   - ESP32 + nRF24L01+ packet forwarding nodes
-   - Transparent operation - extends network range
-   - Status LED shows network activity (fast/slow blink)
-   - Statistics tracking every 30 seconds
-   - High placement (2.5-4m) for optimal range
-   - USB or external power (5V)
-
-## Network Configuration
-
-### Radio Module Settings (nRF24L01)
-
-- **Data rate:** 1 Mbps
-- **Channel:** 76 (2.476 GHz)
-- **Power level:** 0 dBm
-- **Auto-ACK:** Enabled
-- **Dynamic payloads:** ON (≤32 bytes)
-- **CRC:** 16-bit
-- **Address:** 0xE7E7E7E7E7
-
-### Addressing
-
-- Uses RF24Mesh for dynamic address allocation
-- Controller is master (nodeID 0)
-- Automatic route discovery and failover
-
-## Protocol Structure
-
-### Time Data Frame (Controller to Play Clock)
-
+### Data Frame Structure
 ```
 seconds_high: 1B    // High byte of seconds value
 seconds_low: 1B     // Low byte of seconds value
 sequence: 1B        // Sequence number (0-255, wraps)
 ```
 
-**Protocol Notes:**
-- Controller sends continuous time data every 250ms
-- Receiver infers start/stop/reset from time value changes
-- No explicit command bytes - time changes drive state transitions
+**Protocol Logic**:
+- Controller broadcasts time data every 250ms when running
+- Receivers infer state transitions from time value changes
+- No explicit command bytes - time changes drive all state transitions
 
 ## Hardware Specifications
 
-### LED Display Configuration
+### LED Display Standards
+- **LED Type**: WS2815 12V (dual data lines DI & BI for reliability)
+- **LED Density**: 60 LEDs/m (16.6mm spacing)
+- **Power**: 12V DC injected at both ends of each digit
+- **Format**: 7-segment display
 
-- **LED type:** WS2815 12V (dual data lines DI & BI)
-- **Density:** 60 LEDs/m (16.6mm spacing)
-- **Power:** 12V DC injected at both ends of each digit
-- **7-segment display format**
+#### Play Clock (SS Format)
+- **Digit Height**: 50cm (≈30 LEDs per vertical segment)
+- **Horizontal Segments**: 25cm (≈15 LEDs)
+- **Total Digits**: 2
 
-#### Play Clock Digits
+#### Game Clock (MM:SS Format)
+- **Digit Height**: 30cm (≈20 LEDs per vertical segment)
+- **Horizontal Segments**: 15cm (≈10 LEDs)
+- **Total Digits**: 4
 
-- **Height:** 50cm (≈30 LEDs per vertical segment)
-- **Horizontal segments:** 25cm (15 LEDs)
-- **Digits:** 2 (SS format)
+### Common Pin Assignments
+- **Radio CE**: GPIO5
+- **Radio CSN**: GPIO4
+- **SPI**: SCK=18, MOSI=23, MISO=19
+- **Status LED**: GPIO2 (built-in) or GPIO17 (external)
 
-#### Game Clock Digits
+## Development Standards
 
-- **Height:** 30cm (≈20 LEDs per vertical segment)
-- **Horizontal segments:** 15cm (10 LEDs)
-- **Digits:** 4 (MM:SS format)
+### Code Requirements
+- **Framework**: ESP-IDF (native C, no Arduino imports)
+- **Build System**: CMake
+- **Language**: C (not C++) for maximum reliability
+- **Implemented Modules**: Controller, Play Clock, Repeater
 
-## Development Notes
+### Timing Constraints
+- **Time Updates**: 250ms interval from controller (4Hz)
+- **Button Detection**: Immediate with duration-based logic
+- **Link Timeout**: 10 seconds detection in display modules
+- **Button Debounce**: ≥20ms for referee watch
+
+### Reliability Features
+- **Link Loss Detection**: Status LED warning after 10 seconds
+- **CRC8 Validation**: Data integrity checking
+- **Sequence Numbers**: Packet tracking and loss detection
+- **Auto-Retry**: Up to 3 attempts for referee watch commands
+- **Mesh Rerouting**: Automatic failover on node failure
 
 ### Power Management
+- **LED Displays**: 12V power injection at both ends
+- **WS2815**: Backup data line for reliability
+- **Referee Watch**: Low power mode for battery operation
+- **Repeaters**: USB or external 5V power
 
-- 12V power injection at both ends of each digit for voltage stability
-- WS2815 provides backup data line for reliability
-- Battery considerations for referee watch (low power mode)
+## Development Workflow
 
-### Communication Reliability
+### Module Structure
+```
+module_name/
+├── main/
+│   ├── main.c           # Main application logic
+│   ├── radio_comm.c     # Radio communication layer
+│   └── display_driver.c # LED control (display modules only)
+├── include/
+│   ├── radio_comm.h     # Radio interface definitions
+│   └── display_driver.h # LED driver interface (display modules)
+├── CMakeLists.txt       # Build configuration
+└── README.md           # Module-specific documentation
+```
 
-- Link loss detection: if no data for 10 seconds, status LED indicates warning
-- CRC8 validation for data integrity
-- Sequence numbers for packet tracking
-- Automatic mesh rerouting on node failure
-- Controller monitors transmission success rate with status LED feedback
+### Build Commands
+```bash
+cd module_name/
+idf.py build flash monitor
+idf.py menuconfig         # Optional configuration
+```
 
-### Timing Requirements
-
-- Time update interval: 250ms from controller when running (4Hz)
-- Button press detection: Immediate with duration-based logic
-- Link timeout detection: 10 seconds in Play Clock module
-- ESP32 project using ESP-IDF framework (no Arduino code/imports)
-- LED display modules are receive-only, displaying data from controller (master)
-- Play Clock, Controller, and Repeater modules are fully implemented with CMake build system
-
-## Git Configuration
-
-- Never use "opencode user" in git commits
-- All commits should be attributed to "linroot"
+### Git Configuration
+- **Author**: All commits must be attributed to "linroot"
+- **Prohibited**: Never use "opencode user" in commit messages
+- **Submodules**: Use `git submodule update --init --recursive`
