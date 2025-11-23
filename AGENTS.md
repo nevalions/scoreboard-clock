@@ -13,7 +13,6 @@ Modular wireless scoreboard system using ESP32 microcontrollers, WS2815 LED stri
 |--------|------|-------|---------|--------|
 | **Controller** | Master timing control | nRF24L01+ | Status LED | 🚧 In Development |
 | **Play Clock** | Seconds display (SS) | nRF24L01+ | 2×100cm digits | 🚧 In Development |
-| **Game Clock** | MM:SS display | nRF24L01+ | 4×60cm digits | 🚧 In Development |
 | **Referee Watch** | Remote control | nRF24L01+ | LCD + buttons | 🚧 In Development |
 | **Repeater** | Network extension | nRF24L01+ | Status LED | 🚧 In Development |
 
@@ -59,10 +58,7 @@ sequence: 1B        // Sequence number (0-255, wraps)
 - **Horizontal Segments**: 25cm (≈15 LEDs)
 - **Total Digits**: 2
 
-#### Game Clock (MM:SS Format)
-- **Digit Height**: 30cm (≈20 LEDs per vertical segment)
-- **Horizontal Segments**: 15cm (≈10 LEDs)
-- **Total Digits**: 4
+
 
 ### Pin Assignments
 - **Radio CE**: GPIO5

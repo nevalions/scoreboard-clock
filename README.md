@@ -10,7 +10,6 @@ The system consists of networked nodes that communicate wirelessly to provide sy
 |--------|--------|------|---------|-----------|
 | **Controller** | 🚧 In Development | Master timing control | Status LED | Smart button |
 | **Play Clock** | 🚧 In Development | Seconds display (SS) | 2×100cm digits | Receive-only |
-| **Game Clock** | 🚧 In Development | Minutes:Seconds (MM:SS) | 4×60cm digits | Receive-only |
 | **Referee Watch** | 🚧 In Development | Remote control | LCD + buttons | Multiple buttons |
 | **Repeater** | 🚧 In Development | Network extension | Status LED | Automatic |
 
@@ -24,7 +23,6 @@ scoreboard_clock/
 ├── play_clock/              # 🚧 Play Clock module
 ├── controller/              # 🚧 Controller module  
 ├── repeater/                # 🚧 Repeater module
-├── game_clock/              # 🚧 Game Clock module
 ├── referee_watch/           # 🚧 Referee Watch module
 └── radio-common/            # 📦 Shared radio library
 ```
@@ -62,11 +60,6 @@ For detailed radio specifications, see [`AGENTS.md`](./AGENTS.md#radio-communica
 - **Documentation**: [`repeater/README.md`](./repeater/README.md)
 
 ### Planned Modules
-
-#### Game Clock (`/game_clock/`)
-- **Purpose**: 4-digit minutes:seconds display (MM:SS format)
-- **Display**: 4×60cm 7-segment digits
-- **Status**: LED driver adaptation needed
 
 #### Referee Watch (`/referee_watch/`)
 - **Purpose**: Handheld remote control for referees
@@ -129,7 +122,6 @@ idf.py menuconfig
 | **Play Clock** | 🚧 In Development | Native C implementation |
 | **Controller** | 🚧 In Development | Native C implementation |
 | **Repeater** | 🚧 In Development | Native C implementation |
-| **Game Clock** | 🚧 In Development | LED driver adaptation |
 | **Referee Watch** | 🚧 In Development | UI design, power management |
 
 ## Documentation
