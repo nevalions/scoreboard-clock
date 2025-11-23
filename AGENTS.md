@@ -1,13 +1,10 @@
-# Agent Guidelines
+# Technical Specifications
 
-Technical specifications and development standards for the ESP32-based scoreboard timer system.
+Development standards and technical specifications for the ESP32-based scoreboard timer system.
 
 ## System Architecture
 
-### Overview
-Modular wireless scoreboard system using ESP32 microcontrollers, WS2815 LED strips, and nRF24L01+ radio modules for sports timing applications.
-
-### Module Responsibilities
+### Module Overview
 
 | Module | Role | Radio | Display | Status |
 |--------|------|-------|---------|--------|
@@ -93,7 +90,13 @@ sequence: 1B        // Sequence number (0-255, wraps)
 - **Referee Watch**: Low power mode for battery operation
 - **Repeaters**: USB or external 5V power
 
-## Development Workflow
+## Development Standards
+
+### Code Requirements
+- **Framework**: ESP-IDF (native C, no Arduino imports)
+- **Build System**: CMake
+- **Language**: C (not C++) for maximum reliability
+- **Implemented Modules**: Controller, Play Clock, Repeater
 
 ### Module Structure
 ```
