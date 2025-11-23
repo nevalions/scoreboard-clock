@@ -123,3 +123,8 @@ sequence: 1B        // Sequence number (0-255, wraps)
 - ESP32 project using ESP-IDF framework (no Arduino code/imports)
 - LED display modules are receive-only, displaying data from controller (master)
 - Play Clock, Controller, and Repeater modules are fully implemented with CMake build system
+
+## Git Configuration
+
+- Never use "opencode user" in git commits
+- All commits should be attributed to "linroot"
