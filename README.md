@@ -1,80 +1,79 @@
 # ScoreBoard Timer System
 
-A modular wireless scoreboard system based on ESP32 microcontrollers and WS2815 LED strips, designed for sports timing applications.
+A modular wireless scoreboard system using ESP32 microcontrollers, WS2815 LED strips, and nRF24L01+ radio modules for sports timing applications.
 
-## 🏗️ System Overview
+## System Architecture
 
-The system consists of multiple networked nodes that communicate wirelessly to provide synchronized timing displays:
+The system consists of networked nodes that communicate wirelessly to provide synchronized timing displays:
 
-### Node Types
-
-| Module | Status | Function | Display | Control |
-|--------|--------|----------|---------|---------|
+| Module | Status | Role | Display | Interface |
+|--------|--------|------|---------|-----------|
 | **Controller** | ✅ Complete | Master timing control | Status LED | Smart button |
 | **Play Clock** | ✅ Complete | Seconds display (SS) | 2×100cm digits | Receive-only |
 | **Game Clock** | 🚧 Planned | Minutes:Seconds (MM:SS) | 4×60cm digits | Receive-only |
 | **Referee Watch** | 🚧 Planned | Remote control | LCD + buttons | Multiple buttons |
 | **Repeater** | ✅ Complete | Network extension | Status LED | Automatic |
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 scoreboard_clock/
-├── README.md                 # This file
-├── AGENTS.md                 # Development guidelines for Claude
+├── README.md                 # Project overview
+├── AGENTS.md                 # Development guidelines
+├── LICENSE                   # MIT License
 ├── play_clock/              # ✅ Play Clock module
 ├── controller/              # ✅ Controller module  
+├── repeater/                # ✅ Repeater module
 ├── game_clock/              # 🚧 Game Clock module (planned)
 ├── referee_watch/           # 🚧 Referee Watch module (planned)
-├── repeater/                # ✅ Repeater module
 └── radio-common/            # 📦 Shared radio library
 ```
 
-## 📡 Communication Protocol
+## Communication Protocol
 
-The system uses nRF24L01+ radio modules with a simplified time-based protocol:
+The system uses a simplified time-based protocol over nRF24L01+ radios:
 
 - **Controller** broadcasts time data every 250ms when running
-- **Display modules** receive-only and infer state from time changes
+- **Display modules** receive-only and infer state from time changes  
 - **No explicit commands** - time value changes drive all state transitions
 
-For detailed radio specifications and protocol structure, see [`AGENTS.md`](./AGENTS.md).
+For detailed radio specifications, see [`AGENTS.md`](./AGENTS.md#radio-communication-protocol).
 
-## 🔧 Module Overview
+## Module Details
 
-### ✅ Implemented Modules
-
-#### Play Clock (`/play_clock/`)
-- **Function**: 2-digit seconds display (SS format)
-- **Display**: 2×100cm 7-segment digits with WS2815 LEDs
-- **Features**: Connection monitoring, timeout detection, automatic recovery
-- **Documentation**: [`play_clock/README.md`](./play_clock/README.md)
+### Implemented Modules
 
 #### Controller (`/controller/`)
-- **Function**: Master timing control and data transmission
+- **Purpose**: Master timing control and data transmission
 - **Interface**: Smart button with press duration detection
 - **Features**: Continuous time broadcasting, link quality monitoring
 - **Documentation**: [`controller/README.md`](./controller/README.md)
 
+#### Play Clock (`/play_clock/`)
+- **Purpose**: 2-digit seconds display (SS format)
+- **Display**: 2×100cm 7-segment digits with WS2815 LEDs
+- **Features**: Connection monitoring, timeout detection, automatic recovery
+- **Documentation**: [`play_clock/README.md`](./play_clock/README.md)
+
 #### Repeater (`/repeater/`)
-- **Function**: Network range extension through packet forwarding
+- **Purpose**: Network range extension through packet forwarding
 - **Operation**: Transparent forwarding with status monitoring
 - **Features**: Statistics tracking, simple deployment
 - **Documentation**: [`repeater/README.md`](./repeater/README.md)
 
-### 🚧 Planned Modules
+### Planned Modules
 
 #### Game Clock (`/game_clock/`)
-- **Function**: 4-digit minutes:seconds display (MM:SS format)
+- **Purpose**: 4-digit minutes:seconds display (MM:SS format)
 - **Display**: 4×60cm 7-segment digits
 - **Status**: LED driver adaptation needed
 
 #### Referee Watch (`/referee_watch/`)
-- **Function**: Handheld remote control for referees
+- **Purpose**: Handheld remote control for referees
 - **Interface**: LCD display with multiple control buttons
 - **Status**: UI design and power management needed
 
-## 🚀 Quick Start
+## Getting Started
 
 ### Prerequisites
 - ESP32 development boards
@@ -84,7 +83,7 @@ For detailed radio specifications and protocol structure, see [`AGENTS.md`](./AG
 
 ### Repository Setup
 
-This project uses Git submodules for shared libraries:
+This project uses Git submodules:
 
 ```bash
 git clone --recursive https://github.com/nevalions/scoreboard-clock.git
@@ -96,24 +95,19 @@ If already cloned:
 git submodule update --init --recursive
 ```
 
-### Build & Flash
+### Build and Flash
 
-**Play Clock**
-```bash
-cd play_clock/
-idf.py build flash monitor
-```
+Each module builds independently:
 
-**Controller**
 ```bash
-cd controller/
-idf.py build flash monitor
-```
+# Play Clock
+cd play_clock/ && idf.py build flash monitor
 
-**Repeater**
-```bash
-cd repeater/
-idf.py build flash monitor
+# Controller  
+cd controller/ && idf.py build flash monitor
+
+# Repeater
+cd repeater/ && idf.py build flash monitor
 ```
 
 Optional configuration:
@@ -122,23 +116,23 @@ idf.py menuconfig
 ```
 
 ### Development Workflow
-1. Set up ESP-IDF environment and VS Code extension
+1. Set up ESP-IDF environment
 2. Configure hardware pins in module-specific sdkconfig
 3. Build and flash individual modules
 4. Test radio communication between modules
 5. Deploy with repeaters for range extension
 
-## 📋 Implementation Status
+## Implementation Status
 
-| Module | Status | Implementation |
-|--------|--------|----------------|
+| Module | Status | Notes |
+|--------|--------|-------|
 | **Play Clock** | ✅ Complete | Native C, field-tested |
 | **Controller** | ✅ Complete | Native C, operational |
 | **Repeater** | ✅ Complete | Native C, tested |
 | **Game Clock** | 🚧 Planned | LED driver adaptation |
 | **Referee Watch** | 🚧 Planned | UI design, power management |
 
-## 🔗 Documentation
+## Documentation
 
 - **Development Guidelines**: [`AGENTS.md`](./AGENTS.md) - Technical specifications and coding standards
 - **Module Documentation**: Individual README files in each module directory

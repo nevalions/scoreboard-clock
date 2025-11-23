@@ -1,16 +1,16 @@
-# AGENTS.md - Development Guidelines
+# Development Guidelines
 
-Development guidance for Claude Code (claude.ai/code) working with this ESP32-based scoreboard timer system.
+Technical specifications and development standards for the ESP32-based scoreboard timer system.
 
-## Technical Architecture
+## System Architecture
 
-### System Overview
+### Overview
 Modular wireless scoreboard system using ESP32 microcontrollers, WS2815 LED strips, and nRF24L01+ radio modules for sports timing applications.
 
-### Node Types & Responsibilities
+### Module Responsibilities
 
-| Module | Role | Radio | Display | Implementation Status |
-|--------|------|-------|---------|----------------------|
+| Module | Role | Radio | Display | Status |
+|--------|------|-------|---------|--------|
 | **Controller** | Master timing control | nRF24L01+ | Status LED | ✅ Complete (C) |
 | **Play Clock** | Seconds display (SS) | nRF24L01+ | 2×100cm digits | ✅ Complete (C) |
 | **Game Clock** | MM:SS display | nRF24L01+ | 4×60cm digits | 🚧 Planned |
@@ -41,7 +41,7 @@ seconds_low: 1B     // Low byte of seconds value
 sequence: 1B        // Sequence number (0-255, wraps)
 ```
 
-**Protocol Logic**:
+### Protocol Logic
 - Controller broadcasts time data every 250ms when running
 - Receivers infer state transitions from time value changes
 - No explicit command bytes - time changes drive all state transitions
@@ -64,7 +64,7 @@ sequence: 1B        // Sequence number (0-255, wraps)
 - **Horizontal Segments**: 15cm (≈10 LEDs)
 - **Total Digits**: 4
 
-### Common Pin Assignments
+### Pin Assignments
 - **Radio CE**: GPIO5
 - **Radio CSN**: GPIO4
 - **SPI**: SCK=18, MOSI=23, MISO=19
@@ -124,3 +124,23 @@ idf.py menuconfig         # Optional configuration
 - **Author**: All commits must be attributed to "linroot"
 - **Prohibited**: Never use "opencode user" in commit messages
 - **Submodules**: Use `git submodule update --init --recursive`
+
+## Testing and Validation
+
+### Radio Communication Testing
+- Verify packet reception with sequence numbers
+- Test link loss detection and recovery
+- Validate mesh routing with repeaters
+- Check CRC validation on all packets
+
+### Display Testing
+- Verify LED segment mapping for all digits
+- Test brightness levels and color consistency
+- Validate power injection effectiveness
+- Check display update timing
+
+### System Integration
+- Test multi-module synchronization
+- Verify button response timing
+- Validate timeout and recovery behavior
+- Test range with and without repeaters
