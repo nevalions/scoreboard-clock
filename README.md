@@ -17,8 +17,8 @@ cd play_clock/ && idf.py build flash monitor
 
 | Module | Role | Display | Interface | Status |
 |--------|------|---------|-----------|--------|
-| **Controller** | Master timing control | Status LED | Smart button | 🚧 In Development |
-| **Play Clock** | Seconds display (SS) | 2×100cm digits | Receive-only | 🚧 In Development |
+| **Controller** | Master timing control | 1602A LCD | Rotary encoder + button | ✅ Implemented |
+| **Play Clock** | Seconds display (SS) | 2×100cm digits | Status LED + test button | ✅ Implemented |
 | **Referee Watch** | Remote control | LCD + buttons | Multiple buttons | 🚧 In Development |
 | **Repeater** | Network extension | Status LED | Automatic | 🚧 In Development |
 
@@ -40,6 +40,8 @@ scoreboard_clock/
 - **Time-based**: Controller broadcasts time every 250ms
 - **State inference**: Receivers detect state changes from time values
 - **No explicit commands**: Simplified protocol for reliability
+- **Multi-sport support**: Basketball, Football, Baseball, Volleyball, Lacrosse
+- **Link quality monitoring**: Visual feedback via status LEDs
 
 ## Hardware Requirements
 
@@ -47,6 +49,9 @@ scoreboard_clock/
 - ESP-IDF environment
 - WS2815 LED strips (12V)
 - nRF24L01+ radio modules
+- KY-040 Rotary Encoder (controller)
+- 1602A LCD with I2C adapter (controller)
+- Momentary push buttons
 
 ## Development
 

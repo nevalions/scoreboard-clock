@@ -8,8 +8,8 @@ Development standards and technical specifications for the ESP32-based scoreboar
 
 | Module | Role | Radio | Display | Status |
 |--------|------|-------|---------|--------|
-| **Controller** | Master timing control | nRF24L01+ | Status LED | 🚧 In Development |
-| **Play Clock** | Seconds display (SS) | nRF24L01+ | 2×100cm digits | 🚧 In Development |
+| **Controller** | Master timing control | nRF24L01+ | 1602A LCD | ✅ Implemented |
+| **Play Clock** | Seconds display (SS) | nRF24L01+ | 2×100cm digits | ✅ Implemented |
 | **Referee Watch** | Remote control | nRF24L01+ | LCD + buttons | 🚧 In Development |
 | **Repeater** | Network extension | nRF24L01+ | Status LED | 🚧 In Development |
 
@@ -42,6 +42,13 @@ sequence: 1B        // Sequence number (0-255, wraps)
 - Receivers infer state transitions from time value changes
 - No explicit command bytes - time changes drive all state transitions
 
+### Sport Configuration Support
+- **Basketball**: 24s, 30s shot clock variations
+- **Football**: 40s, 25s play clock variations  
+- **Baseball**: 14s, 15s, 19s, 20s pitch clock variations
+- **Volleyball**: 8s serve timing
+- **Lacrosse**: 30s shot clock timing
+
 ## Hardware Specifications
 
 ### LED Display Standards
@@ -58,10 +65,22 @@ sequence: 1B        // Sequence number (0-255, wraps)
 
 
 ### Pin Assignments
+
+#### Common Radio Pins (All Modules)
 - **Radio CE**: GPIO5
 - **Radio CSN**: GPIO4
 - **SPI**: SCK=18, MOSI=23, MISO=19
-- **Status LED**: GPIO2 (built-in) or GPIO17 (external)
+
+#### Controller Module
+- **Status LED**: GPIO17 (external link quality indicator)
+- **Control Button**: GPIO0 (start/stop/reset)
+- **Rotary Encoder**: CLK=GPIO34, DT=GPIO35, SW=GPIO32
+- **I2C LCD**: SDA=GPIO21, SCL=GPIO22
+
+#### Play Clock Module
+- **Status LED**: GPIO2 (built-in)
+- **LED Strip Data**: GPIO13 (WS2815)
+- **Test Button**: GPIO0 (boot button)
 
 ## Development Standards
 
@@ -111,6 +130,24 @@ module_name/
 ├── CMakeLists.txt       # Build configuration
 └── README.md           # Module-specific documentation
 ```
+
+### Implemented Features
+
+#### Controller Module
+- **Multi-sport timing**: Basketball, Football, Baseball, Volleyball, Lacrosse
+- **Rotary encoder control**: Sport selection and time adjustment
+- **Duration-based button logic**: Short press (start/stop), long press (reset)
+- **LCD display**: Sport name, current time, and status information
+- **Link quality monitoring**: Visual feedback via status LED
+- **Continuous broadcasting**: 4Hz update rate when timer is running
+
+#### Play Clock Module
+- **Large LED display**: 2×100cm 7-segment digits using WS2815 strips
+- **Pure display logic**: Shows received time without local processing
+- **Connection monitoring**: Status LED indicates link quality
+- **Built-in testing**: Number cycling test via boot button
+- **Timeout detection**: 10-second link loss detection and recovery
+- **Error handling**: Hardware failure detection and visual indicators
 
 ### Build Commands
 ```bash
