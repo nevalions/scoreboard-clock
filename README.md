@@ -15,12 +15,12 @@ cd play_clock/ && idf.py build flash monitor
 
 ## System Overview
 
-| Module | Role | Display | Interface | Status |
-|--------|------|---------|-----------|--------|
-| **Controller** | Master timing control | 1602A LCD | Rotary encoder + button | ✅ Implemented |
-| **Play Clock** | Seconds display (SS) | 2×100cm digits | Status LED + test button | ✅ Implemented |
-| **Referee Watch** | Remote control | LCD + buttons | Multiple buttons | 🚧 In Development |
-| **Repeater** | Network extension | Status LED | Automatic | 🚧 In Development |
+| Module            | Role                  | Display        | Interface                | Status            |
+| ----------------- | --------------------- | -------------- | ------------------------ | ----------------- |
+| **Controller**    | Master timing control | 1602A LCD      | Rotary encoder + button  | ✅ Implemented    |
+| **Play Clock**    | Seconds display (SS)  | 2×100cm digits | Status LED + test button | ✅ Implemented    |
+| **Referee Watch** | Remote control        | LCD + buttons  | Multiple buttons         | 🚧 In Development |
+| **Repeater**      | Network extension     | Status LED     | Automatic                | 🚧 In Development |
 
 ## Architecture
 
@@ -31,7 +31,6 @@ scoreboard_clock/
 ├── repeater/         # Network range extension
 ├── referee_watch/    # Handheld remote control
 ├── radio-common/     # Shared radio library
-├── AGENTS.md         # Technical specifications
 └── README.md         # This file
 ```
 
@@ -45,6 +44,7 @@ scoreboard_clock/
 - **Link quality monitoring**: Visual feedback via status LEDs
 
 ### RGB Color System
+
 - **Normal Operation (5+ seconds)**: Orange (255, 165, 0)
 - **Urgent Countdown (5-1 seconds)**: Deep Orange-Red (255, 40, 0)
 - **Timer Zero (0 seconds)**: Deep Red (255, 0, 0)
@@ -72,5 +72,4 @@ idf.py menuconfig  # Optional configuration
 
 ## Documentation
 
-- **Technical specs**: [`AGENTS.md`](./AGENTS.md)
 - **Module details**: Individual README files in module directories
