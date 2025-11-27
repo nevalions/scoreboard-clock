@@ -1,6 +1,6 @@
 # Technical Specifications
 
-Development standards and technical specifications for the ESP32-based scoreboard timer system.
+Development standards and technical specifications for the ESP32-based scoreboard timer system with RGB color support.
 
 ## System Architecture
 
@@ -34,13 +34,23 @@ Development standards and technical specifications for the ESP32-based scoreboar
 ```
 seconds_high: 1B    // High byte of seconds value
 seconds_low: 1B     // Low byte of seconds value
+color_r: 1B         // Red color component (0-255)
+color_g: 1B         // Green color component (0-255)
+color_b: 1B         // Blue color component (0-255)
 sequence: 1B        // Sequence number (0-255, wraps)
 ```
 
 ### Protocol Logic
 - Controller broadcasts time data every 250ms when running
 - Receivers infer state transitions from time value changes
+- RGB color data transmitted alongside time for dynamic display colors
 - No explicit command bytes - time changes drive all state transitions
+
+### Color Logic Implementation
+- **Normal Operation (5+ seconds)**: Orange (255, 165, 0)
+- **Urgent Countdown (5-1 seconds)**: Deep Orange-Red (255, 40, 0)
+- **Timer Zero (0 seconds)**: Deep Red (255, 0, 0)
+- **Null Signal (0xFF)**: Deep Red (255, 0, 0) for display clear
 
 ### Sport Configuration Support
 - **Basketball**: 24s, 30s shot clock variations
@@ -61,8 +71,6 @@ sequence: 1B        // Sequence number (0-255, wraps)
 - **Digit Height**: 50cm (≈30 LEDs per vertical segment)
 - **Horizontal Segments**: 25cm (≈15 LEDs)
 - **Total Digits**: 2
-
-
 
 ### Pin Assignments
 
@@ -140,9 +148,11 @@ module_name/
 - **LCD display**: Sport name, current time, and status information
 - **Link quality monitoring**: Visual feedback via status LED
 - **Continuous broadcasting**: 4Hz update rate when timer is running
+- **RGB color transmission**: Dynamic color data sent with time values
 
 #### Play Clock Module
 - **Large LED display**: 2×100cm 7-segment digits using WS2815 strips
+- **Dynamic color display**: Uses received RGB values for digit colors
 - **Pure display logic**: Shows received time without local processing
 - **Connection monitoring**: Status LED indicates link quality
 - **Built-in testing**: Number cycling test via boot button
@@ -168,15 +178,18 @@ idf.py menuconfig         # Optional configuration
 - Test link loss detection and recovery
 - Validate mesh routing with repeaters
 - Check CRC validation on all packets
+- Test RGB color transmission and reception
 
 ### Display Testing
 - Verify LED segment mapping for all digits
 - Test brightness levels and color consistency
 - Validate power injection effectiveness
 - Check display update timing
+- Test RGB color accuracy and transitions
 
 ### System Integration
 - Test multi-module synchronization
 - Verify button response timing
 - Validate timeout and recovery behavior
 - Test range with and without repeaters
+- Test color transitions during countdown sequences

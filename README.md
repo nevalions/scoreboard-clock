@@ -1,6 +1,6 @@
 # ScoreBoard Timer System
 
-Modular wireless scoreboard system using ESP32 microcontrollers, WS2815 LED strips, and nRF24L01+ radio modules for sports timing applications.
+Modular wireless scoreboard system using ESP32 microcontrollers, WS2815 LED strips, and nRF24L01+ radio modules for sports timing applications with RGB color support.
 
 ## Quick Start
 
@@ -41,7 +41,14 @@ scoreboard_clock/
 - **State inference**: Receivers detect state changes from time values
 - **No explicit commands**: Simplified protocol for reliability
 - **Multi-sport support**: Basketball, Football, Baseball, Volleyball, Lacrosse
+- **RGB color transmission**: Dynamic color data sent with time values
 - **Link quality monitoring**: Visual feedback via status LEDs
+
+### RGB Color System
+- **Normal Operation (5+ seconds)**: Orange (255, 165, 0)
+- **Urgent Countdown (5-1 seconds)**: Deep Orange-Red (255, 40, 0)
+- **Timer Zero (0 seconds)**: Deep Red (255, 0, 0)
+- **Null Signal (0xFF)**: Deep Red (255, 0, 0) for display clear
 
 ## Hardware Requirements
 
