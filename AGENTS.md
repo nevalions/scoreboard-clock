@@ -11,7 +11,6 @@ Development standards and technical specifications for the ESP32-based scoreboar
 | **Controller**    | Master timing control | nRF24L01+ | 1602A LCD/ST7735 TFT | ✅ Implemented    |
 | **Play Clock**    | Seconds display (SS)  | nRF24L01+ | 2×100cm digits | ✅ Implemented    |
 | **Repeater**      | Network extension     | nRF24L01+ | Status LED     | ✅ Implemented    |
-| **Sport Selector**| Sport configuration   | nRF24L01+ | ST7735 TFT     | ✅ Implemented    |
 | **Referee Watch** | Remote control        | nRF24L01+ | LCD + buttons  | ❌ Not Implemented |
 
 ## Radio Communication Protocol
@@ -110,7 +109,7 @@ sequence: 1B        // Sequence number (0-255, wraps)
 - **Framework**: ESP-IDF (native C, no Arduino imports)
 - **Build System**: CMake
 - **Language**: C (not C++) for maximum reliability
-- **Implemented Modules**: Controller, Play Clock, Repeater, Sport Selector
+- **Implemented Modules**: Controller, Play Clock, Repeater
 
 ### Timing Constraints
 
@@ -154,6 +153,7 @@ module_name/
 #### Controller Module
 
 - **Multi-sport timing**: Basketball, Football, Baseball, Volleyball, Lacrosse
+- **Integrated sport selection**: Built-in sport configuration interface
 - **Rotary encoder control**: Sport selection and time adjustment
 - **Duration-based button logic**: Short press (start/stop), long press (reset)
 - **LCD/ST7735 display**: Sport name, current time, and status information
@@ -170,15 +170,6 @@ module_name/
 - **Built-in testing**: Number cycling test via boot button
 - **Timeout detection**: 10-second link loss detection and recovery
 - **Error handling**: Hardware failure detection and visual indicators
-
-#### Sport Selector Module
-
-- **Sport configuration**: Select and configure sport-specific timing
-- **ST7735 TFT display**: Visual sport selection interface
-- **Rotary encoder control**: Navigate sport options
-- **Button logic**: Confirm sport selection
-- **Radio communication**: Transmit sport configuration to controller
-- **Link quality monitoring**: Visual feedback via status LED
 
 ### Build Commands
 
