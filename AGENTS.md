@@ -212,3 +212,4 @@ idf.py menuconfig         # Optional configuration
 - Test color transitions during countdown sequences
 
 **Note**: Do not add AGENTS.md to README.md - this file is for development reference only.
+**Note**: When you need to search docs, use `context7` tools.
