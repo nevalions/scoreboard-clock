@@ -57,6 +57,42 @@ For the first lab-stand session after the 2026-07 refactor campaign
       mode does not brown-out the 12 V supply.
 - [ ] **Status LED patterns** match the table in `play_clock/README.md`.
 
+## Phase 4 — Radio robustness (channel 76, 250 kbps, TX burst)
+
+**Flash all three node types together again** — channel and data rate changed
+on-air (76 / 2.476 GHz, 250 kbps). Mixed old/new firmware cannot hear each other.
+
+- [ ] **250 kbps clone check (FIRST, one TX/RX pair on the bench)**: counterfeit
+      nRF24 clones sometimes fail at 250 kbps. If the link is dead at point-blank
+      range, point `RADIO_RF_SETUP` in `radio-common/include/radio_config.h`
+      back at `RADIO_RF_SETUP_1MBPS_0DBM`, rebuild, reflash all — and note it on
+      bead `scoreboard_clock-4em`.
+- [ ] **Range re-test**: repeat the Phase 1 range walk. 250 kbps should give
+      noticeably more margin than before (−94 vs −85 dBm sensitivity).
+- [ ] **Venue WiFi coexistence**: if possible, test with a phone hotspot / AP
+      active on WiFi channel 1 near the controller — the old channel 20 sat
+      inside WiFi ch 1; channel 76 should be unaffected.
+- [ ] **Burst redundancy**: controller log now prints `copies: N/3` per tick —
+      expect 3/3 steadily. Play clock sequence-gap debug log should show fewer
+      gaps than the Phase 1 baseline in the same spot.
+
+## Hardware best-practice notes (bench-side, from 2026-07 research)
+
+Radio:
+- **10 µF ceramic directly across each nRF24 VCC/GND** — the single most
+  documented cause of flaky nRF24 links is supply dip during TX.
+- Antennas upright and clear of the ESP32, wiring bundles, and any switching
+  regulator; receiver antenna placement matters as much as TX power.
+- If PA/LNA modules are ever fitted: decoupling is mandatory, and use the
+  *lowest* TX power that works — PA saturation raises the local noise floor.
+
+LED panel / data line:
+- 74HCT-series level shifter for the 3.3 V → 5 V WS2815 data line (ESP32
+  direct drive is marginal); ~100–330 Ω series resistor *at the strip input*;
+  data cable short, twisted with ground; solid common ground ESP32 ↔ PSU.
+- 1000 µF electrolytic across the strip power input; inject 12 V at both ends
+  of long runs; PSU derated 30–50 %; metal backing for heat if in direct sun.
+
 ## Regression sweep
 
 - [ ] All 5 sports × default variants count down with correct colors

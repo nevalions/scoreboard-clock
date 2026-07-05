@@ -45,14 +45,17 @@ idf.py menuconfig       # optional SDK config
 ## Architecture
 
 **Protocol (the contract all modules share).** Controller broadcasts a **6-byte** frame every
-**250 ms (4 Hz)** while running; receivers are stateless and infer everything from the payload —
-there are no command bytes. Frame = `seconds_high, seconds_low, color_r, color_g, color_b, sequence`.
+**250 ms (4 Hz)** while running — **3 identical copies per tick** (burst redundancy, same sequence
+byte); receivers are stateless and infer everything from the payload — there are no command bytes.
+Frame = `seconds_high, seconds_low, color_r, color_g, color_b, sequence`.
 `0xFF` seconds = null/clear (display off, deep red). Color is decided controller-side and carried in
 the frame; displays just render the received RGB. Defined in `radio-common/include/radio_config.h`:
-channel **20**, 5-byte address `0xE7×5`, payload size **6**, CRC-enabled, auto-ACK + auto-retransmit.
+channel **76** (2.476 GHz), **250 kbps** (`RADIO_RF_SETUP` alias — fall back to 1 Mbps if clone
+modules fail), 5-byte address `0xE7×5`, payload size **6**, CRC-enabled, **auto-ACK and
+auto-retransmit disabled** (fire-and-forget broadcast; ACKs from multiple receivers would collide).
 
 > Docs were audited and corrected against code (2026-07). If docs and code ever disagree again,
-> trust `radio_config.h`: channel **20**, bare register-level nRF24L01+ driver over SPI — no RF24Mesh.
+> trust `radio_config.h`: channel **76**, bare register-level nRF24L01+ driver over SPI — no RF24Mesh.
 
 **`radio-common`** is a portable driver: it compiles under ESP-IDF *and* (via `#if defined(ESP_PLATFORM)…`
 guards in the headers) on a host, stubbing GPIO/SPI/logging. Keep those guards intact when editing.

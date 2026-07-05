@@ -35,7 +35,7 @@ scoreboard_clock/
 
 ## Communication Protocol
 
-- **Time-based**: Controller broadcasts time every 250ms (4Hz)
+- **Time-based**: Controller broadcasts time every 250ms (4Hz), 3 identical copies per tick
 - **State inference**: Receivers detect state changes from time values
 - **No explicit commands**: Simplified protocol for reliability
 - **Multi-sport support**: Basketball, Football, Baseball, Volleyball, Lacrosse (integrated in controller)

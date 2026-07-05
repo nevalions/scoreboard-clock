@@ -17,8 +17,8 @@ Development standards and technical specifications for the ESP32-based scoreboar
 
 ### nRF24L01+ Configuration
 
-- **Data Rate**: 1 Mbps
-- **Channel**: 20 (2.420 GHz)
+- **Data Rate**: 250 kbps (fall back to 1 Mbps if clone modules fail)
+- **Channel**: 76 (2.476 GHz)
 - **Power Level**: 0 dBm
 - **Address**: 0xE7E7E7E7E7
 - **Auto-ACK**: Enabled on pipe 0
@@ -164,7 +164,7 @@ module_name/
 - **Duration-based button logic**: Short press (start/stop), long press (reset)
 - **LCD/ST7735 display**: Sport name, current time, and status information
 - **Link quality monitoring**: Visual feedback via status LED
-- **Continuous broadcasting**: 4Hz update rate when timer is running
+- **Continuous broadcasting**: 4Hz update rate, 3 identical copies per tick, when timer is running
 - **RGB color transmission**: Dynamic color data sent with time values
 
 #### Play Clock Module
