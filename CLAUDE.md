@@ -20,7 +20,12 @@ submodule is committed *in that submodule*, then the superproject commit bumps t
 | `controller/`   | `scoreboard-clock-controller` | Master timing node: menus, sport selection, timer, TX |
 | `play_clock/`   | `...-led-display-esp-ws2815` | 2-digit WS2815 seconds display: RX only, pure display |
 | `repeater/`     | `...-repeater-nRF24L01` | RF range extender: RX→re-TX |
-| `radio-common/` | `...-radio-common-nrf24` | Shared bare-metal nRF24L01+ SPI driver (`RadioCommon`) |
+| `radio-common/` | `...-radio-common-nrf24` | Shared bare-metal nRF24L01+ SPI driver (`RadioCommon`) + shared protocol headers |
+
+`referee_watch/` is a **plain directory** (not yet a submodule): ESP32-C3 wrist remote sending
+START/STOP + RESET to the controller via encrypted ESP-NOW on WiFi channel 6 (contract in
+`radio-common/include/espnow_link.h`; build with `idf.py set-target esp32c3`). When the
+`scoreboard-clock-referee-watch` GitHub repo exists, convert it to a submodule.
 
 After cloning: `git submodule update --init --recursive` (required — modules are empty otherwise).
 

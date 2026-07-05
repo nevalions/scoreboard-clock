@@ -147,6 +147,28 @@ Needs: active buzzer module (or MOSFET + 12 V horn) on play clock GPIO25.
 - [ ] **Scan stability**: during normal operation (frames flowing), receivers
       never hop (no "Channel scan" log lines while link is alive).
 
+## Phase 9 — Referee watches (needs 1+ built ESP32-C3 watch)
+
+Pairing first: flash controller + watch, read both MACs from boot logs, fill
+`controller/include/espnow_watches.h` and `referee_watch/include/watch_config.h`,
+CHANGE the PMK/LMK in `radio-common/include/espnow_link.h`, reflash both.
+
+- [ ] **Delivery + haptics**: watch START/STOP press toggles the clock within
+      ~0.3s and the watch gives one vibration pulse; out of range / controller
+      off gives three pulses after the retry burst.
+- [ ] **No double-toggle**: mash the button rapidly — each press is one toggle
+      (per-press sequence dedupe); a retry burst never toggles twice.
+- [ ] **Two watches**: both work; simultaneous presses from two watches both
+      register (distinct watch_ids).
+- [ ] **Security**: a third, non-allowlisted C3 sending the same frame is
+      dropped (controller logs "non-allowlisted MAC").
+- [ ] **Coexistence**: with the watch link active, the nRF24 broadcast stays
+      smooth (WiFi ch 6 sits between nRF24 candidates 24/49; verify no play
+      clock stutter during watch traffic).
+- [ ] **Range**: watch works across the full field distance to the controller.
+- [ ] **Battery**: light-sleep idle current ~1mA (3-4 weeks per charge);
+      low-battery double fail-pattern fires below ~3.55V.
+
 ## Hardware best-practice notes (bench-side, from 2026-07 research)
 
 Radio:
