@@ -108,6 +108,25 @@ on-air (76 / 2.476 GHz, 250 kbps). Mixed old/new firmware cannot hear each other
       decimal point are confusing in practice, revert is a one-line change
       controller-side (receivers just render what they get).
 
+## Phase 7 — ms-accurate timer, paused tenths, time adjust, buzzer
+
+Needs: active buzzer module (or MOSFET + 12 V horn) on play clock GPIO25.
+
+- [ ] **Pause preserves tenths**: START, stop around 3.4 — both the TFT and
+      the play clock freeze at "3.4"/"34" (not 04); resume continues from the
+      same value. This was the pre-refactor bug: it used to restart at 4.0.
+- [ ] **Time adjust**: while paused, rotate the encoder — clock steps ±1 s per
+      detent, clamped 0–99; displays follow immediately. While running,
+      rotation still opens the sport menu; double-tap still opens it paused.
+- [ ] **TFT tenths**: final 5 s shows "4.9"-style on the controller TFT, no
+      visible flicker at 10 Hz partial redraws.
+- [ ] **Buzzer — football**: select Football 40/25, run through 10 s → single
+      short beep at 10; then beeps at 5,4,3,2,1 and a ~1.5 s blast at 0.
+- [ ] **Buzzer — basketball**: no beep at 10 (flag off); 5→1 beeps + blast
+      at 0 still sound.
+- [ ] **Buzzer no-false-positives**: reset, preset jumps, pause/resume, and
+      controller power-cycle mid-count produce no spurious beeps.
+
 ## Hardware best-practice notes (bench-side, from 2026-07 research)
 
 Radio:
