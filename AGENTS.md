@@ -8,7 +8,7 @@ Development standards and technical specifications for the ESP32-based scoreboar
 
 | Module            | Role                  | Radio     | Display        | Status            |
 | ----------------- | --------------------- | --------- | -------------- | ----------------- |
-| **Controller**    | Master timing control | nRF24L01+ | 1602A LCD/ST7735 TFT | ✅ Implemented    |
+| **Controller**    | Master timing control | nRF24L01+ | ST7735 TFT | ✅ Implemented    |
 | **Play Clock**    | Seconds display (SS)  | nRF24L01+ | 2×100cm digits | ✅ Implemented    |
 | **Repeater**      | Network extension     | nRF24L01+ | Status LED     | ✅ Implemented    |
 | **Referee Watch** | Remote control        | nRF24L01+ | LCD + buttons  | ❌ Not Implemented |
@@ -18,19 +18,20 @@ Development standards and technical specifications for the ESP32-based scoreboar
 ### nRF24L01+ Configuration
 
 - **Data Rate**: 1 Mbps
-- **Channel**: 76 (2.476 GHz)
+- **Channel**: 20 (2.420 GHz)
 - **Power Level**: 0 dBm
 - **Address**: 0xE7E7E7E7E7
-- **Auto-ACK**: Enabled
-- **Dynamic Payloads**: ON (≤32 bytes)
-- **CRC**: 16-bit validation
+- **Auto-ACK**: Enabled on pipe 0
+- **Payload**: Fixed 6-byte payload (no dynamic payloads)
+- **CRC**: 1-byte CRC
+- **Retries**: `SETUP_RETR` = 0x4F (1250µs delay, 15 retries)
 
 ### Network Topology
 
-- **RF24Mesh**: Dynamic address allocation
-- **Controller**: Master node (nodeID 0)
-- **Automatic route discovery** and failover
-- **Transparent repeaters** for range extension
+- **Star broadcast**: Controller transmits on a fixed address; all receivers listen on the same pipe
+- **Transparent repeaters**: Same-channel, single-hop relay with sequence-based duplicate
+  suppression; forwards the full 6-byte frame including RGB. Not a mesh — there is no dynamic
+  address allocation, route discovery, or rerouting/failover.
 
 ### Data Frame Structure
 
@@ -49,13 +50,16 @@ sequence: 1B        // Sequence number (0-255, wraps)
 - Receivers infer state transitions from time value changes
 - RGB color data transmitted alongside time for dynamic display colors
 - No explicit command bytes - time changes drive all state transitions
+- **Null signal**: 3 seconds after the timer reaches zero, the controller switches to broadcasting
+  `seconds = 0xFF` continuously. Receivers treat this as "no active timer" and clear their displays.
 
 ### Color Logic Implementation
 
-- **Normal Operation (5+ seconds)**: Orange (255, 165, 0)
-- **Urgent Countdown (5-1 seconds)**: Deep Orange-Red (255, 40, 0)
-- **Timer Zero (0 seconds)**: Deep Red (255, 0, 0)
-- **Null Signal (0xFF)**: Deep Red (255, 0, 0) for display clear
+Colors are per-sport (`controller/main/colors.c`), not universal:
+
+- **Football**: Orange (255, 90, 0) normally → Deep Orange-Red (255, 40, 0) below 5s → Red (255, 0, 0) at 0/null
+- **Basketball**: Always Red (255, 0, 0)
+- **Baseball / Volleyball / Lacrosse**: Always Orange
 
 ### Sport Configuration Support
 
@@ -90,11 +94,14 @@ sequence: 1B        // Sequence number (0-255, wraps)
 
 #### Controller Module
 
-- **Status LED**: GPIO17 (external link quality indicator)
+- **Status LED**: GPIO2 (external link quality indicator)
 - **Control Button**: GPIO0 (start/stop/reset)
 - **Rotary Encoder**: CLK=GPIO33, DT=GPIO16, SW=GPIO32
-- **I2C LCD**: SDA=GPIO21, SCL=GPIO22
 - **ST7735 TFT**: CS=GPIO27, DC=GPIO26, RST=GPIO25, SDA=GPIO13, SCL=GPIO14
+- **Preset Buttons (1-4)**: GPIO21, GPIO22, GPIO36, GPIO34
+- **Start Button**: GPIO35
+- **Reset Button**: GPIO15
+- Note: GPIO34/35/36 are input-only pins and require external pull-up resistors
 
 #### Play Clock Module
 
@@ -121,10 +128,9 @@ sequence: 1B        // Sequence number (0-255, wraps)
 ### Reliability Features
 
 - **Link Loss Detection**: Status LED warning after 10 seconds
-- **CRC8 Validation**: Data integrity checking
+- **Hardware CRC**: 1-byte CRC on all radio packets (nRF24L01+)
 - **Sequence Numbers**: Packet tracking and loss detection
-- **Auto-Retry**: Up to 3 attempts for referee watch commands
-- **Mesh Rerouting**: Automatic failover on node failure
+- **Hardware Auto-Retry**: `SETUP_RETR` = 1250µs delay / 15 retries per transmission
 
 ### Power Management
 
@@ -191,7 +197,7 @@ idf.py menuconfig         # Optional configuration
 
 - Verify packet reception with sequence numbers
 - Test link loss detection and recovery
-- Validate mesh routing with repeaters
+- Validate repeater relay behavior and sequence-based duplicate suppression
 - Check CRC validation on all packets
 - Test RGB color transmission and reception
 

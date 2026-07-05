@@ -17,7 +17,7 @@ cd controller/ && idf.py build flash monitor
 
 | Module            | Role                  | Display        | Interface                | Status            |
 | ----------------- | --------------------- | -------------- | ------------------------ | ----------------- |
-| **Controller**    | Master timing control | 1602A LCD/ST7735 TFT | Rotary encoder + button  | ✅ Implemented    |
+| **Controller**    | Master timing control | ST7735 TFT | Rotary encoder + button  | ✅ Implemented    |
 | **Play Clock**    | Seconds display (SS)  | 2×100cm digits | Status LED + test button | ✅ Implemented    |
 | **Repeater**      | Network extension     | Status LED     | Automatic                | ✅ Implemented    |
 | **Referee Watch** | Remote control        | LCD + buttons  | Multiple buttons         | ❌ Not Implemented |
@@ -55,10 +55,14 @@ sequence: 1B        // Sequence number (0-255, wraps)
 
 ### Timer State System
 
-- **Normal Operation (5+ seconds)**: Orange (255, 165, 0)
-- **Urgent Countdown (5-1 seconds)**: Deep Orange-Red (255, 40, 0)
-- **Timer Zero (0 seconds)**: Deep Red (255, 0, 0)
-- **Null Signal (0xFF)**: Deep Red (255, 0, 0) for display clear
+Colors are per-sport (see `controller/main/colors.c`):
+
+- **Football**: Orange (255, 90, 0) normally, Deep Orange-Red (255, 40, 0) below 5s, Red (255, 0, 0) at 0/null
+- **Basketball**: Always Red (255, 0, 0)
+- **Baseball / Volleyball / Lacrosse**: Always Orange
+
+Once the timer reaches zero, the controller keeps broadcasting for 3 seconds, then switches to the
+**Null Signal**: `seconds = 0xFF`. Receivers treat this as "no active timer" and clear their displays.
 
 ## Hardware Requirements
 
@@ -67,7 +71,7 @@ sequence: 1B        // Sequence number (0-255, wraps)
 - WS2815 LED strips (12V) for play clock displays
 - nRF24L01+ radio modules
 - KY-040 Rotary Encoder (controller)
-- 1602A LCD with I2C adapter OR ST7735 TFT display (controller)
+- ST7735 TFT display (controller)
 - Momentary push buttons
 
 ### Common Radio Pins (All Modules)
@@ -76,11 +80,14 @@ sequence: 1B        // Sequence number (0-255, wraps)
 - **SPI**: SCK=18, MOSI=23, MISO=19
 
 ### Controller Module
-- **Status LED**: GPIO17
+- **Status LED**: GPIO2
 - **Control Button**: GPIO0
 - **Rotary Encoder**: CLK=GPIO33, DT=GPIO16, SW=GPIO32
-- **I2C LCD**: SDA=GPIO21, SCL=GPIO22
-- **ST7735 TFT**: CS=GPIO27, DC=GPIO26, RST=GPIO25, MOSI=GPIO13, SCK=GPIO14
+- **ST7735 TFT**: CS=GPIO27, DC=GPIO26, RST=GPIO25, SDA=GPIO13, SCL=GPIO14
+- **Preset Buttons (1-4)**: GPIO21, GPIO22, GPIO36, GPIO34
+- **Start Button**: GPIO35
+- **Reset Button**: GPIO15
+- Note: GPIO34/35/36 are input-only and require external pull-up resistors
 
 ### Play Clock Module
 - **Status LED**: GPIO2 (built-in)

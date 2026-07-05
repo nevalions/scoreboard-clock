@@ -51,9 +51,8 @@ there are no command bytes. Frame = `seconds_high, seconds_low, color_r, color_g
 the frame; displays just render the received RGB. Defined in `radio-common/include/radio_config.h`:
 channel **20**, 5-byte address `0xE7×5`, payload size **6**, CRC-enabled, auto-ACK + auto-retransmit.
 
-> Note: the top-level `AGENTS.md`/`README.md` prose is partly aspirational and drifts from code —
-> it says channel 76 and "RF24Mesh dynamic addressing." The code uses **channel 20** and a **bare
-> register-level nRF24L01+ driver over SPI** (`radio_common.c`), not RF24Mesh. Trust `radio_config.h`.
+> Docs were audited and corrected against code (2026-07). If docs and code ever disagree again,
+> trust `radio_config.h`: channel **20**, bare register-level nRF24L01+ driver over SPI — no RF24Mesh.
 
 **`radio-common`** is a portable driver: it compiles under ESP-IDF *and* (via `#if defined(ESP_PLATFORM)…`
 guards in the headers) on a host, stubbing GPIO/SPI/logging. Keep those guards intact when editing.
@@ -63,8 +62,8 @@ guards in the headers) on a host, stubbing GPIO/SPI/logging. Keep those guards i
 - `sport_manager` — sport presets & variants (Basketball/Football/Baseball/Volleyball/Lacrosse).
 - `timer_manager` — countdown state machine, decides the color per remaining seconds.
 - `input_handler` — rotary encoder + control/preset buttons; short press start/stop, long press reset.
-- `ui_manager` — dispatches to a display backend. UI is split by device under `main/ui/`:
-  `ui_st7735_*` (TFT) and `ui_lcd_i2c_*` (1602A). `USE_ST7735_DISPLAY` in `main.c` selects one.
+- `ui_manager` — drives the ST7735 TFT via `main/ui/ui_st7735_*` (the 1602A I2C LCD path was
+  removed; ST7735 is the only display).
 - `radio_comm.c` wraps `radio-common` for TX with the module's pins.
 
 **Play clock / repeater** are thin: an RX loop over `radio-common`, a 10 s link-loss timeout, a
