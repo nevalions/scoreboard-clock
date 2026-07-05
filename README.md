@@ -62,7 +62,11 @@ Colors are per-sport (see `controller/main/colors.c`):
 - **Baseball / Volleyball / Lacrosse**: Always Orange
 
 Once the timer reaches zero, the controller keeps broadcasting for 3 seconds, then switches to the
-**Null Signal**: `seconds = 0xFF`. Receivers treat this as "no active timer" and clear their displays.
+**Null Signal**: seconds value **255** (on air: high byte `0x00`, low byte `0xFF`). Receivers treat
+this as "no active timer" and clear their displays.
+
+Frames are broadcast fire-and-forget: auto-ACK and auto-retransmit are disabled on every node,
+because multiple receivers share one address and simultaneous ACKs would collide.
 
 ## Hardware Requirements
 
