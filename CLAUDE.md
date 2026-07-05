@@ -54,12 +54,15 @@ tenths at ~10 Hz and rendered as two digits ("49" = 4.9 s). **Bit 15** flags the
 (football). The play clock drives a buzzer (GPIO25) from received values: beep at 10 (flagged),
 beeps 5→1, long blast at 0. Color is decided controller-side and carried in
 the frame; displays just render the received RGB. Defined in `radio-common/include/radio_config.h`:
-channel **76** (2.476 GHz), **250 kbps** (`RADIO_RF_SETUP` alias — fall back to 1 Mbps if clone
-modules fail), 5-byte address `0xE7×5`, payload size **6**, CRC-enabled, **auto-ACK and
-auto-retransmit disabled** (fire-and-forget broadcast; ACKs from multiple receivers would collide).
+**channel-agile** — boot default 76; the controller RPD-surveys `RADIO_CHANNEL_CANDIDATES`
+{76, 82, 78, 74, 49, 24} and picks the quietest (operator override via the channel menu: control
+button inside the sport menu); receivers hop the same list after 2 s of silence until frames appear.
+**250 kbps** (`RADIO_RF_SETUP` alias — fall back to 1 Mbps if clone modules fail), 5-byte address
+`0xE7×5`, payload size **6**, CRC-enabled, **auto-ACK and auto-retransmit disabled**
+(fire-and-forget broadcast; ACKs from multiple receivers would collide).
 
 > Docs were audited and corrected against code (2026-07). If docs and code ever disagree again,
-> trust `radio_config.h`: channel **76**, bare register-level nRF24L01+ driver over SPI — no RF24Mesh.
+> trust `radio_config.h`: bare register-level nRF24L01+ driver over SPI — no RF24Mesh.
 
 **`radio-common`** is a portable driver: it compiles under ESP-IDF *and* (via `#if defined(ESP_PLATFORM)…`
 guards in the headers) on a host, stubbing GPIO/SPI/logging. Keep those guards intact when editing.

@@ -127,6 +127,26 @@ Needs: active buzzer module (or MOSFET + 12 V horn) on play clock GPIO25.
 - [ ] **Buzzer no-false-positives**: reset, preset jumps, pause/resume, and
       controller power-cycle mid-count produce no spurious beeps.
 
+## Phase 8 — Channel agility
+
+- [ ] **Boot survey**: controller log shows per-candidate busy counts and the
+      auto-picked channel; with a quiet bench expect it to stay on 76.
+- [ ] **Receiver acquire**: power receivers before the controller — they hop
+      (log "Channel scan: trying N") and lock within ~4s of the controller's
+      first frames.
+- [ ] **Channel menu**: sport menu → control button → channel list with '#'
+      occupancy bars and '*' on the active channel; rotary scrolls, click
+      applies. Hold a phone hotspot near the controller and re-open the menu —
+      the bars should visibly react.
+- [ ] **Live channel change**: with the clock running paused mid-count, apply a
+      different channel — all receivers re-acquire within ~4s, the count is NOT
+      reset, and no receiver stays stranded (check every play clock + repeater).
+- [ ] **Fleet check (multi-node)**: with 2+ play clocks and 2+ repeaters, all
+      nodes converge on the new channel after an operator change; duplicates
+      from multiple repeaters cause no flicker (sequence dedupe).
+- [ ] **Scan stability**: during normal operation (frames flowing), receivers
+      never hop (no "Channel scan" log lines while link is alive).
+
 ## Hardware best-practice notes (bench-side, from 2026-07 research)
 
 Radio:
