@@ -23,7 +23,6 @@ sdkconfig.old
 .pio/
 .pioenvs/
 .piolibdeps/
-.vscode/
 *.tmp
 *.bak
 *.swp
