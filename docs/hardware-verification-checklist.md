@@ -90,6 +90,24 @@ on-air (76 / 2.476 GHz, 250 kbps). Mixed old/new firmware cannot hear each other
 - [ ] **Test patterns**: play clock BOOT-button test patterns go through the
       same gamma path — colors should match game rendering.
 
+## Phase 6 — Final-countdown tenths
+
+- [ ] **Tenths kick in at 4.9**: running countdown shows whole seconds down to
+      "05", then switches to "49" → "48" → … → "01" → "00" (deciseconds, no
+      decimal point) in the sub-5 s warning color. Verify the 5→4.9 transition
+      is smooth, no flicker or stall.
+- [ ] **10 Hz cadence**: tenths tick visibly ~10×/second on the play clock;
+      controller log shows forced sends per decisecond.
+- [ ] **Pause during tenths**: STOP at e.g. 3.x — display freezes on whole
+      seconds ("03"), resume restarts that second (existing pause behavior).
+- [ ] **Zero + null**: tenths run out at "00"; ~3 s later the display blanks
+      (null path unchanged).
+- [ ] **Repeater passthrough**: tenths work identically through the repeater
+      (payload is relayed untouched).
+- [ ] **Readability call**: watch "49" at game distance — if tenths without a
+      decimal point are confusing in practice, revert is a one-line change
+      controller-side (receivers just render what they get).
+
 ## Hardware best-practice notes (bench-side, from 2026-07 research)
 
 Radio:

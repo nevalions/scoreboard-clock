@@ -48,7 +48,9 @@ idf.py menuconfig       # optional SDK config
 **250 ms (4 Hz)** while running — **3 identical copies per tick** (burst redundancy, same sequence
 byte); receivers are stateless and infer everything from the payload — there are no command bytes.
 Frame = `seconds_high, seconds_low, color_r, color_g, color_b, sequence`.
-`0xFF` seconds = null/clear (display off, deep red). Color is decided controller-side and carried in
+Time field: 0–99 whole seconds; **255** = null/clear (display off, deep red); **256+d** (d = 0–49) =
+final-countdown deciseconds — the last 5 s of a running countdown are sent as tenths at ~10 Hz and
+rendered as two digits ("49" = 4.9 s). Color is decided controller-side and carried in
 the frame; displays just render the received RGB. Defined in `radio-common/include/radio_config.h`:
 channel **76** (2.476 GHz), **250 kbps** (`RADIO_RF_SETUP` alias — fall back to 1 Mbps if clone
 modules fail), 5-byte address `0xE7×5`, payload size **6**, CRC-enabled, **auto-ACK and
