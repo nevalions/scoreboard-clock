@@ -201,3 +201,7 @@ wifi_config.h
 # Temporary firmware files
 firmware_temp/
 firmware_backup/
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+.beads-credential-key

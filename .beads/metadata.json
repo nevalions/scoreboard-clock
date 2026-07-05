@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "scoreboard_clock",
+  "project_id": "eab74230-396e-4146-8fa5-c41708326358"
+}
