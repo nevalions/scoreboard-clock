@@ -20,7 +20,7 @@ cd controller/ && idf.py build flash monitor
 | **Controller**    | Master timing control | ST7735 TFT | Rotary encoder + button  | ✅ Implemented    |
 | **Play Clock**    | Seconds display (SS)  | 2×100cm digits | Status LED + test button | ✅ Implemented    |
 | **Repeater**      | Network extension     | Status LED     | Automatic                | ✅ Implemented    |
-| **Referee Watch** | Remote control        | LCD + buttons  | Multiple buttons         | ❌ Not Implemented |
+| **Referee Watch** | Remote control (ESP32-C3, ESP-NOW) | Vibration motor | 2 buttons | ✅ Firmware (hardware pending) |
 
 ## Architecture
 
