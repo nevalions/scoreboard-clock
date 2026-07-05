@@ -68,6 +68,9 @@ button inside the sport menu); receivers hop the same list after 2 s of silence 
 
 > Docs were audited and corrected against code (2026-07). If docs and code ever disagree again,
 > trust `radio_config.h`: bare register-level nRF24L01+ driver over SPI — no RF24Mesh.
+> **Protocol facts live in `radio-common/README.md` + `radio_config.h` only** — when editing any
+> other doc, summarize and link there; never copy values (channel, rate, encoding, ACK policy).
+> Copied values are how the docs drifted three times.
 
 **`radio-common`** is a portable driver: it compiles under ESP-IDF *and* (via `#if defined(ESP_PLATFORM)…`
 guards in the headers) on a host, stubbing GPIO/SPI/logging. Keep those guards intact when editing.

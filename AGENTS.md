@@ -6,25 +6,23 @@ Development standards and technical specifications for the ESP32-based scoreboar
 
 ### Module Overview
 
-| Module            | Role                  | Radio     | Display        | Status            |
-| ----------------- | --------------------- | --------- | -------------- | ----------------- |
-| **Controller**    | Master timing control | nRF24L01+ | ST7735 TFT | ✅ Implemented    |
-| **Play Clock**    | Seconds display (SS)  | nRF24L01+ | 2×100cm digits | ✅ Implemented    |
-| **Repeater**      | Network extension     | nRF24L01+ | Status LED     | ✅ Implemented    |
-| **Referee Watch** | Remote control        | nRF24L01+ | LCD + buttons  | ❌ Not Implemented |
+| Module            | Role                  | Radio     | Display / IO     | Status            |
+| ----------------- | --------------------- | --------- | ---------------- | ----------------- |
+| **Controller**    | Master timing control | nRF24L01+ (TX) + WiFi ESP-NOW (watch RX) | ST7735 TFT | ✅ Implemented    |
+| **Play Clock**    | Seconds display (SS)  | nRF24L01+ | 2×100cm digits + buzzer | ✅ Implemented    |
+| **Repeater**      | Network extension     | nRF24L01+ | Status LED       | ✅ Implemented    |
+| **Referee Watch** | Remote control (ESP32-C3) | WiFi ESP-NOW | 2 buttons + vibration | ✅ Firmware (hardware validation pending) |
 
 ## Radio Communication Protocol
 
-### nRF24L01+ Configuration
+> **Canonical protocol reference: `radio-common/README.md` + `radio-common/include/radio_config.h`.**
+> Do not restate protocol values (channel, data rate, encoding, ACK policy) in other docs —
+> summarize and link there instead. Past drift came from values copied into many files.
 
-- **Data Rate**: 250 kbps (fall back to 1 Mbps if clone modules fail)
-- **Channel**: 76 (2.476 GHz)
-- **Power Level**: 0 dBm
-- **Address**: 0xE7E7E7E7E7
-- **Auto-ACK**: Enabled on pipe 0
-- **Payload**: Fixed 6-byte payload (no dynamic payloads)
-- **CRC**: 1-byte CRC
-- **Retries**: `SETUP_RETR` = 0x4F (1250µs delay, 15 retries)
+Summary: channel-agile fire-and-forget broadcast (auto-ACK and auto-retransmit **disabled**),
+250 kbps, fixed 6-byte payload, 1-byte hardware CRC, address 0xE7×5. The controller RPD-surveys
+the shared candidate list and picks the quietest channel; receivers hop the same list after 2 s
+of silence until they hear frames.
 
 ### Network Topology
 
@@ -36,22 +34,33 @@ Development standards and technical specifications for the ESP32-based scoreboar
 ### Data Frame Structure
 
 ```
-seconds_high: 1B    // High byte of seconds value
-seconds_low: 1B     // Low byte of seconds value
+time_high: 1B       // Time field high byte (bit 15 = WARN10 flag)
+time_low: 1B        // Time field low byte
 color_r: 1B         // Red color component (0-255)
 color_g: 1B         // Green color component (0-255)
 color_b: 1B         // Blue color component (0-255)
 sequence: 1B        // Sequence number (0-255, wraps)
 ```
 
+Time-field encoding (full definition in `radio_config.h`): 0–99 whole seconds; 255 null/clear;
+256+d deciseconds for the final 5 s (tenths, ~10 Hz); bit 15 flags the 10 s buzzer (football).
+
 ### Protocol Logic
 
-- Controller broadcasts time data every 250ms when running
-- Receivers infer state transitions from time value changes
-- RGB color data transmitted alongside time for dynamic display colors
-- No explicit command bytes - time changes drive all state transitions
-- **Null signal**: 3 seconds after the timer reaches zero, the controller switches to broadcasting
-  `seconds = 0xFF` continuously. Receivers treat this as "no active timer" and clear their displays.
+- Controller broadcasts every 250ms while running, 3 identical copies per tick (burst
+  redundancy); forced immediate send on every value change (~10 Hz during tenths)
+- Receivers are stateless: they infer everything from the received value (no command bytes)
+- **Null signal**: 3 seconds after zero the controller broadcasts 255 continuously;
+  receivers clear their displays
+- Play clock drives referee buzzer patterns from received values (10 s warning on WARN10
+  frames, per-second beeps 5→1, long blast at 0) — downward crossings only, so duplicates
+  and resets never sound
+
+### Referee Watch Uplink (ESP-NOW)
+
+Separate radio path: encrypted ESP-NOW on WiFi channel 6 (between nRF24 candidates 24/49),
+contract in `radio-common/include/espnow_link.h`. Build-time MAC pairing, per-watch sequence
+dedupe, commands join the controller's normal input-action path.
 
 ### Color Logic Implementation
 
@@ -120,17 +129,21 @@ Colors are per-sport (`controller/main/colors.c`), not universal:
 
 ### Timing Constraints
 
-- **Time Updates**: 250ms interval from controller (4Hz)
+- **Time Updates**: 250ms interval from controller (4Hz); ~10 Hz during the final 5 s (tenths)
+- **Timer**: millisecond-accurate; pause preserves the exact remaining fraction
 - **Button Detection**: Immediate with duration-based logic
-- **Link Timeout**: 10 seconds detection in display modules
-- **Button Debounce**: ≥20ms for referee watch
+- **Link Timeout**: 10 seconds blanking in display modules; channel scan starts after 2 s silence
+- **Button Debounce**: 40ms on the referee watch
 
 ### Reliability Features
 
-- **Link Loss Detection**: Status LED warning after 10 seconds
-- **Hardware CRC**: 1-byte CRC on all radio packets (nRF24L01+)
-- **Sequence Numbers**: Packet tracking and loss detection
-- **Hardware Auto-Retry**: `SETUP_RETR` = 1250µs delay / 15 retries per transmission
+- **Link Loss Detection**: Status LED warning + display blanking after 10 seconds
+- **Hardware CRC**: 1-byte CRC on all radio packets; implausible values rejected in software
+- **Sequence Numbers**: Packet tracking, loss logging, repeater duplicate suppression
+- **Burst redundancy**: 3 identical copies per tick (auto-ACK/auto-retry are disabled — broadcast)
+- **Self-healing**: receivers re-configure after 60 s silence (esp_restart after 3 failures);
+  controller re-configures after 20 consecutive TX failures but never restarts (timer must survive)
+- **Channel agility**: receivers re-acquire a changed channel by scanning the candidate list
 
 ### Power Management
 
@@ -158,31 +171,32 @@ module_name/
 
 #### Controller Module
 
-- **Multi-sport timing**: Basketball, Football, Baseball, Volleyball, Lacrosse
-- **Integrated sport selection**: Built-in sport configuration interface
-- **Rotary encoder control**: Sport selection and time adjustment
+- **Multi-sport timing**: Basketball, Football, Baseball, Volleyball, Lacrosse (variant menus)
+- **ms-accurate timer**: pause preserves the exact tenth; TFT shows tenths in the final 5 s
+- **Rotary gestures**: running = rotation opens sport menu, click cycles TX brightness
+  (day/dusk/night RGB scaling); paused = rotation adjusts time ±1s; control button in the
+  sport menu opens the radio channel menu (RPD noise bars + manual pick)
 - **Duration-based button logic**: Short press (start/stop), long press (reset)
-- **LCD/ST7735 display**: Sport name, current time, and status information
-- **Link quality monitoring**: Visual feedback via status LED
-- **Continuous broadcasting**: 4Hz update rate, 3 identical copies per tick, when timer is running
-- **RGB color transmission**: Dynamic color data sent with time values
+- **ST7735 display**: sport, big clock, RUN/PAUSE + brightness + link status row
+- **Continuous broadcasting**: 4Hz, 3 identical copies per tick; boot-time channel auto-pick
+- **Referee watch uplink**: encrypted ESP-NOW receiver on the otherwise idle WiFi radio
 
 #### Play Clock Module
 
 - **Large LED display**: 2×100cm 7-segment digits using WS2815 strips
-- **Dynamic color display**: Uses received RGB values for digit colors
-- **Pure display logic**: Shows received time without local processing
-- **Connection monitoring**: Status LED indicates link quality
-- **Built-in testing**: Number cycling test via boot button
-- **Timeout detection**: 10-second link loss detection and recovery
-- **Error handling**: Hardware failure detection and visual indicators
+- **Dynamic color display**: received RGB through a gamma-2.2 LUT, brightness capped 150/255
+- **Pure display logic**: renders received values incl. deciseconds ("49" = 4.9 s)
+- **Referee buzzer** (GPIO25): 10 s warning (flagged frames), beeps 5→1, long blast at 0
+- **Connection monitoring**: status LED patterns + 10 s link-loss blanking; channel scan
+- **Built-in testing**: number cycling test via boot button (only when no radio link)
 
 ### Build Commands
 
 ```bash
 cd module_name/
-idf.py build flash monitor
+idf.py build              # agents build only - flash/monitor is for the human
 idf.py menuconfig         # Optional configuration
+# referee_watch only: idf.py set-target esp32c3 first
 ```
 
 ### Git Configuration
