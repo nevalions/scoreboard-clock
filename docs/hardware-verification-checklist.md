@@ -76,6 +76,20 @@ on-air (76 / 2.476 GHz, 250 kbps). Mixed old/new firmware cannot hear each other
       expect 3/3 steadily. Play clock sequence-gap debug log should show fewer
       gaps than the Phase 1 baseline in the same spot.
 
+## Phase 5 — Brightness profiles & gamma
+
+- [ ] **Brightness cycle**: rotary click on the running screen cycles
+      100% → 50% → 25% → 100%; the TFT status row shows the percentage and the
+      play clock visibly dims within one transmit tick (~250 ms).
+- [ ] **Night readability**: at 25% the digits are still clearly readable
+      indoors; dimming steps look perceptually even (gamma LUT working —
+      without it 50% would look nearly as bright as 100%).
+- [ ] **Color check**: Football orange still reads as orange on the LEDs —
+      gamma shifts mixed colors toward their correct sRGB appearance, but
+      verify no hue looks wrong at each brightness level.
+- [ ] **Test patterns**: play clock BOOT-button test patterns go through the
+      same gamma path — colors should match game rendering.
+
 ## Hardware best-practice notes (bench-side, from 2026-07 research)
 
 Radio:
