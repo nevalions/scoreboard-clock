@@ -1,0 +1,13 @@
+# Beads issue store: line-delimited JSON, one issue per line, keyed by "id".
+#
+# Use git's built-in `union` merge driver: on a conflicting hunk it keeps the
+# lines from BOTH sides instead of writing conflict markers. That guarantees the
+# file stays valid JSONL after a merge — no hand-editing, no corruption — and
+# `bd import` (run automatically by the post-merge git hook) upserts by id to
+# reconcile the local database; the next `bd export` rewrites the file deduped.
+#
+# `union` is a git built-in, so it needs NO per-clone `git config` setup — unlike
+# the old `merge=beads` driver (which called `bd merge`, removed in bd 1.0). That
+# stale driver name is worse than useless: the command exits non-zero, git marks
+# a conflict AND drops the other machine's issues from the worktree.
+.beads/issues.jsonl merge=union

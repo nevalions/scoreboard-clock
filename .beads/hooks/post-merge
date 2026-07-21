@@ -1,24 +1,32 @@
 #!/usr/bin/env sh
-# --- BEGIN BEADS INTEGRATION v1.0.3 ---
-# This section is managed by beads. Do not remove these markers.
+# Post-merge hook: reconcile the beads database with the merged export.
+#
+# Runs after a successful `git merge` / `git pull`. Imports the git-tracked
+# `.beads/issues.jsonl` so issues created on another machine show up here
+# immediately. bd auto-exports on every write but NEVER auto-imports, so
+# without this a pull leaves the local database stale and `bd list` silently
+# under-reports.
+#
+# This deliberately calls `bd import` instead of the `bd hooks run post-merge`
+# shim that `bd hooks install` generates: in bd 1.0.3 that subcommand is a
+# SILENT NO-OP — it exits 0 and imports nothing. Verified by pulling a bead
+# created on another clone: issues.jsonl updated, `bd list` did not.
+#
+# The beads section markers are intentionally omitted so that a future
+# `bd hooks install` appends its own section rather than overwriting this one.
+#
+# `.beads/issues.jsonl` uses the `union` merge driver (see .gitattributes), so a
+# merge may leave duplicate-id lines; `bd import` upserts by id and the next
+# `bd export` rewrites the file deduped.
+#
+# Best-effort: never fail the merge.
+
 if command -v bd >/dev/null 2>&1; then
-  export BD_GIT_HOOK=1
-  _bd_timeout=${BEADS_HOOK_TIMEOUT:-300}
-  if command -v timeout >/dev/null 2>&1; then
-    timeout "$_bd_timeout" bd hooks run post-merge "$@"
-    _bd_exit=$?
-    if [ $_bd_exit -eq 124 ]; then
-      echo >&2 "beads: hook 'post-merge' timed out after ${_bd_timeout}s — continuing without beads"
-      _bd_exit=0
+    beads_export="$(git rev-parse --show-toplevel)/.beads/issues.jsonl"
+    if [ -s "$beads_export" ]; then
+        bd import "$beads_export" >/dev/null 2>&1 \
+            || echo "beads: post-merge import failed — run 'bd bootstrap' if issues look stale" >&2
     fi
-  else
-    bd hooks run post-merge "$@"
-    _bd_exit=$?
-  fi
-  if [ $_bd_exit -eq 3 ]; then
-    echo >&2 "beads: database not initialized — skipping hook 'post-merge'"
-    _bd_exit=0
-  fi
-  if [ $_bd_exit -ne 0 ]; then exit $_bd_exit; fi
 fi
-# --- END BEADS INTEGRATION v1.0.3 ---
+
+exit 0
