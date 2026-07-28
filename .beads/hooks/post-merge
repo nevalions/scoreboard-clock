@@ -34,8 +34,20 @@ set -uo pipefail
 
 command -v bd >/dev/null 2>&1 || exit 0
 
-hook_dir="$(cd "$(dirname "$0")" && pwd)"
-dedupe="$hook_dir/beads-dedupe-jsonl.py"
+# Find the filter. $(dirname "$0") alone is NOT enough: under husky the active
+# hook is the shim .husky/_/post-merge, which SOURCES this file, so $0 still
+# points at .husky/_ — a husky-generated directory that is gitignored, so
+# nothing we put there would travel. Try the repo's known hook dirs too.
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null)"
+dedupe=""
+for candidate in \
+    "$(dirname "$0")/beads-dedupe-jsonl.py" \
+    "${repo_root:-.}/.githooks/beads-dedupe-jsonl.py" \
+    "${repo_root:-.}/.beads/hooks/beads-dedupe-jsonl.py" \
+    "${repo_root:-.}/.husky/beads-dedupe-jsonl.py" \
+    "${repo_root:-.}/scripts/beads-dedupe-jsonl.py"; do
+    if [ -f "$candidate" ]; then dedupe="$candidate"; break; fi
+done
 
 # In a worktree, .beads lives in the MAIN repo root, not the worktree root —
 # resolving it as plain $(git rev-parse --show-toplevel) finds nothing there
@@ -60,7 +72,7 @@ echo "==> beads import (post-merge)"
 # of a pull. pipefail also keeps a python3 crash from being masked by bd's
 # exit status at the end of the pipe.
 import_rc=0
-if command -v python3 >/dev/null 2>&1 && [ -f "$dedupe" ]; then
+if command -v python3 >/dev/null 2>&1 && [ -n "$dedupe" ]; then
     import_out="$(python3 "$dedupe" < "$beads_export" | bd import - 2>&1)" || import_rc=$?
 else
     import_out="$(bd import "$beads_export" 2>&1)" || import_rc=$?
