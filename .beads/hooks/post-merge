@@ -1,32 +1,83 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 # Post-merge hook: reconcile the beads database with the merged export.
+# Enable once per clone with:  git config core.hooksPath <this dir>
 #
 # Runs after a successful `git merge` / `git pull`. Imports the git-tracked
 # `.beads/issues.jsonl` so issues created on another machine show up here
-# immediately. bd auto-exports on every write but NEVER auto-imports, so
-# without this a pull leaves the local database stale and `bd list` silently
-# under-reports.
+# immediately. bd NEVER auto-imports, so without this a pull leaves the local
+# database stale and `bd list` silently under-reports.
 #
-# This deliberately calls `bd import` instead of the `bd hooks run post-merge`
-# shim that `bd hooks install` generates: in bd 1.0.3 that subcommand is a
-# SILENT NO-OP — it exits 0 and imports nothing. Verified by pulling a bead
+# The mirror image is worth knowing, because the older wording here claimed bd
+# "auto-exports on every write" and that is FALSE. Measured on bd 1.0.3 by
+# hashing .beads/issues.jsonl around each operation, in two repos, identical
+# results: only `bd create` writes the export. `bd update --claim`,
+# `--append-notes`, `--priority`, `bd close` and `bd delete` all leave the file
+# untouched. The pre-commit hook is the real export path — so a closure only
+# leaves this machine if a commit follows it, and closing issues AFTER the
+# final commit strands them silently behind a clean worktree.
+#
+# Call `bd import` DIRECTLY, not `bd hooks run post-merge`: in bd 1.0.3 that
+# subcommand is a silent no-op — it exits 0 and imports nothing, so the
+# delegation looks healthy while syncing nothing. Verified by pulling a bead
 # created on another clone: issues.jsonl updated, `bd list` did not.
 #
-# The beads section markers are intentionally omitted so that a future
-# `bd hooks install` appends its own section rather than overwriting this one.
+# DANGER, and the reason this hook is not a bare `bd import` (bead ansible-cxu):
+# `.beads/issues.jsonl` uses the `union` merge driver (see .gitattributes),
+# which appends the OTHER side's unique lines AFTER ours, and `bd import`
+# upserts last-line-wins with NO updated_at comparison. So merging a branch
+# whose issues.jsonl predates the target silently REVERTS newer issue states —
+# that reopened a closed issue in kube-lvl47 on 2026-07-22. beads-dedupe-jsonl.py
+# keeps only the newest line per id first, which makes line order irrelevant.
 #
-# `.beads/issues.jsonl` uses the `union` merge driver (see .gitattributes), so a
-# merge may leave duplicate-id lines; `bd import` upserts by id and the next
-# `bd export` rewrites the file deduped.
-#
-# Best-effort: never fail the merge.
+# Best-effort: never fail the merge. `set -e` is deliberately NOT used.
+set -uo pipefail
 
-if command -v bd >/dev/null 2>&1; then
-    beads_export="$(git rev-parse --show-toplevel)/.beads/issues.jsonl"
-    if [ -s "$beads_export" ]; then
-        bd import "$beads_export" >/dev/null 2>&1 \
-            || echo "beads: post-merge import failed — run 'bd bootstrap' if issues look stale" >&2
-    fi
+command -v bd >/dev/null 2>&1 || exit 0
+
+hook_dir="$(cd "$(dirname "$0")" && pwd)"
+dedupe="$hook_dir/beads-dedupe-jsonl.py"
+
+# In a worktree, .beads lives in the MAIN repo root, not the worktree root —
+# resolving it as plain $(git rev-parse --show-toplevel) finds nothing there
+# and the hook silently does nothing.
+if [ "$(git rev-parse --git-dir 2>/dev/null)" != "$(git rev-parse --git-common-dir 2>/dev/null)" ]; then
+    beads_dir="$(dirname "$(git rev-parse --git-common-dir)")/.beads"
+else
+    beads_dir="$(git rev-parse --show-toplevel 2>/dev/null)/.beads"
+fi
+
+beads_export="$beads_dir/issues.jsonl"
+[ -s "$beads_export" ] || exit 0
+
+echo "==> beads import (post-merge)"
+
+# The raw-import fallback only runs where python3 or the filter is missing. It
+# is last-line-wins, so a stale merged line can still overwrite a newer state
+# there — that is the bug above, not a second opinion about it.
+#
+# `|| import_rc=$?` is load-bearing: bd exits non-zero on a no-op import, and
+# pipefail is set, so a bare assignment would abort on the most common outcome
+# of a pull. pipefail also keeps a python3 crash from being masked by bd's
+# exit status at the end of the pipe.
+import_rc=0
+if command -v python3 >/dev/null 2>&1 && [ -f "$dedupe" ]; then
+    import_out="$(python3 "$dedupe" < "$beads_export" | bd import - 2>&1)" || import_rc=$?
+else
+    import_out="$(bd import "$beads_export" 2>&1)" || import_rc=$?
+fi
+
+# bd 1.0.3 exits NON-ZERO on a no-op import:
+#   Error: commit: dolt commit: Error 1105: nothing to commit
+# That is success — the database already matches the file. Reporting it as a
+# failure would warn on nearly every pull and train the reader to ignore the
+# message, masking a real one.
+if [ "$import_rc" -eq 0 ]; then
+    echo "    beads database reconciled"
+elif printf '%s' "$import_out" | grep -qi 'nothing to commit'; then
+    echo "    beads database already current"
+else
+    echo "    beads import FAILED — run 'bd bootstrap' if issues look stale" >&2
+    printf '%s\n' "$import_out" | sed 's/^/    /' >&2
 fi
 
 exit 0
